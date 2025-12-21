@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="PinkBlue Christmas Dental Challenge 2025">
+    <title>🎄 PinkBlue Christmas Challenge | Win Big Rewards</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Three.js for 3D snow -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- GSAP for smooth animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    
+    <!-- Particles.js -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-preset-snow@2.12.0/tsparticles.preset.snow.bundle.min.js"></script>
+    
+    <!-- Supabase -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- 3D Snow Canvas -->
+    <canvas id="snow-canvas"></canvas>
+
+    <!-- Christmas Lights Overlay -->
+    <div class="christmas-lights">
+        <div class="light red"></div>
+        <div class="light blue"></div>
+        <div class="light green"></div>
+        <div class="light yellow"></div>
+        <div class="light red"></div>
+        <div class="light blue"></div>
+        <div class="light green"></div>
+        <div class="light yellow"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="header" id="mainHeader">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="logo-icon">🎄</span>
+                    <span class="logo-text">PinkBlue Christmas Challenge</span>
+                    <span class="logo-icon">🎁</span>
+                </h1>
+                <p class="tagline">Test Your Dental Expertise & Win Amazing Rewards!</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-value" id="attemptsLeft">2</div>
+                        <div class="stat-label">Attempts Left</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">❓</div>
+                        <div class="stat-value">10</div>
+                        <div class="stat-label">Questions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏰</div>
+                        <div class="stat-value">2:00</div>
+                        <div class="stat-label">Time Limit</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Start Screen -->
+        <section class="screen active" id="startScreen">
+            <div class="card glass-card">
+                <div class="card-header">
+                    <div class="christmas-icon">🎅</div>
+                    <h2 class="card-title">Ho Ho Ho! Ready for the Challenge?</h2>
+                    <p class="card-subtitle">Answer 10 dental questions in 2 minutes and unlock exclusive Christmas rewards!</p>
+                </div>
+
+                <div class="rules-container">
+                    <h3 class="rules-title">
+                        <span>🎯</span>
+                        <span>How It Works</span>
+                    </h3>
+                    <div class="rules-grid">
+                        <div class="rule-item">
+                            <span class="rule-emoji">✨</span>
+                            <span>10 professional dental questions</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-emoji">⏱️</span>
+                            <span>2 minutes countdown timer</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-emoji">🎁</span>
+                            <span>Better scores = Bigger rewards!</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-emoji">🔥</span>
+                            <span>2 reward attempts + unlimited practice</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-emoji">📱</span>
+                            <span>Share on WhatsApp to challenge friends</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-emoji">🏆</span>
+                            <span>Compete on the global leaderboard</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary btn-lg" id="startBtn">
+                        <span class="btn-icon">🚀</span>
+                        <span>Start Challenge</span>
+                        <span class="btn-shine"></span>
+                    </button>
+                    <button class="btn btn-secondary" id="leaderboardBtn">
+                        <span class="btn-icon">🏆</span>
+                        <span>View Leaderboard</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz Screen -->
+        <section class="screen" id="quizScreen">
+            <div class="quiz-header">
+                <div class="timer-card" id="timerCard">
+                    <div class="timer-icon">⏱️</div>
+                    <div class="timer-value" id="timerValue">2:00</div>
+                    <div class="timer-label">Time Remaining</div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill"></div>
+                    <div class="progress-text" id="progressText">Question 1 of 10</div>
+                </div>
+            </div>
+
+            <div class="card glass-card question-card">
+                <div class="question-header">
+                    <span class="question-number" id="questionNumber">01</span>
+                    <span class="question-divider">/</span>
+                    <span class="question-total">10</span>
+                </div>
+                <h3 class="question-text" id="questionText"></h3>
+            </div>
+
+            <div class="options-container" id="optionsContainer">
+                <!-- Options dynamically loaded -->
+            </div>
+
+            <button class="btn btn-primary btn-lg btn-disabled" id="nextBtn" disabled>
+                <span>Next Question</span>
+                <span class="btn-icon">→</span>
+            </button>
+        </section>
+
+        <!-- Results Screen -->
+        <section class="screen" id="resultsScreen">
+            <div class="card glass-card results-card">
+                <div class="confetti-container" id="confetti"></div>
+                
+                <div class="trophy-animation">
+                    <div class="trophy-icon" id="trophyIcon">🏆</div>
+                </div>
+
+                <h2 class="results-title" id="resultsTitle">Congratulations!</h2>
+                
+                <div class="score-circle">
+                    <svg class="score-ring" width="200" height="200">
+                        <circle cx="100" cy="100" r="90" class="score-ring-bg"/>
+                        <circle cx="100" cy="100" r="90" class="score-ring-fill" id="scoreRing"/>
+                    </svg>
+                    <div class="score-content">
+                        <div class="score-value" id="scoreValue">0</div>
+                        <div class="score-total">out of 10</div>
+                    </div>
+                </div>
+
+                <div class="reward-card" id="rewardCard">
+                    <div class="reward-badge">🎁</div>
+                    <h3 class="reward-title" id="rewardTitle">Your Christmas Reward</h3>
+                    <p class="reward-desc" id="rewardDesc"></p>
+                    
+                    <div class="coupon-container">
+                        <div class="coupon-code" id="couponCode">LOADING...</div>
+                        <button class="btn btn-copy" id="copyBtn">
+                            <span class="btn-icon">📋</span>
+                            <span>Copy Code</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-whatsapp" id="shareBtn">
+                        <span class="btn-icon">📱</span>
+                        <span>Share on WhatsApp</span>
+                    </button>
+                    <button class="btn btn-primary" id="redeemBtn">
+                        <span class="btn-icon">🛒</span>
+                        <span>Redeem at PinkBlue.in</span>
+                    </button>
+                    <button class="btn btn-secondary" id="tryAgainBtn">
+                        <span class="btn-icon">🔄</span>
+                        <span>Try Again</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Leaderboard Screen -->
+        <section class="screen" id="leaderboardScreen">
+            <div class="card glass-card leaderboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">🏆 Global Leaderboard</h2>
+                    <p class="card-subtitle">Top Dental Experts of 2025</p>
+                </div>
+
+                <div class="leaderboard-container" id="leaderboardContainer">
+                    <!-- Dynamically loaded -->
+                </div>
+
+                <button class="btn btn-secondary" id="backBtn">
+                    <span class="btn-icon">←</span>
+                    <span>Back to Home</span>
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Countdown Overlay -->
+    <div class="countdown-overlay" id="countdownOverlay">
+        <div class="countdown-circle">
+            <div class="countdown-number" id="countdownNumber">3</div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon">✅</span>
+        <span class="toast-message" id="toastMessage">Success!</span>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/quiz.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
