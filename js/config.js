@@ -5,8 +5,8 @@
 const CONFIG = {
     // Supabase Configuration
     supabase: {
-        url: 'YOUR_SUPABASE_URL_HERE',
-        key: 'YOUR_SUPABASE_ANON_KEY_HERE'
+        url: 'https://aaqkdaakxxgobwdwlega.supabase.co',
+        key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhcWtkYWFreHhnb2J3ZHdsZWdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMzAxMDMsImV4cCI6MjA4MTkwNjEwM30.nAf9QwvnHnJRt_vTc3cl7ntuyGJ28fB2iHwKZ29piSI'
     },
 
     // Quiz Settings
