@@ -1,0 +1,23 @@
+{
+  "name": "pb-christmas-quiz-2025",
+  "version": "1.0.0",
+  "description": "PinkBlue Christmas Dental Challenge 2025",
+  "main": "index.html",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'No build needed'",
+    "deploy": "netlify deploy --prod"
+  },
+  "keywords": [
+    "quiz",
+    "dental",
+    "christmas",
+    "pinkblue"
+  ],
+  "author": "PinkBlue.in",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+}
