@@ -1,153 +1,129 @@
 // =================================
-// 3D SNOW PARTICLE SYSTEM
+// PARTICLE SYSTEM
+// Subtle floating particles background
 // =================================
 
-class SnowParticles {
+class ParticleSystem {
     constructor() {
-        this.canvas = document.getElementById('snow-canvas');
-        this.scene = null;
-        this.camera = null;
-        this.renderer = null;
+        this.canvas = null;
+        this.ctx = null;
         this.particles = [];
-        this.particleCount = 200;
+        this.particleCount = 50;
+        this.animationFrame = null;
         
         this.init();
     }
 
     init() {
-        // Create scene
-        this.scene = new THREE.Scene();
-        
-        // Create camera
-        this.camera = new THREE.PerspectiveCamera(
-            75,
-            window.innerWidth / window.innerHeight,
-            0.1,
-            1000
-        );
-        this.camera.position.z = 5;
+        // Create canvas
+        this.canvas = document.createElement('canvas');
+        this.canvas.id = 'particle-canvas';
+        this.canvas.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.3;
+        `;
+        document.body.appendChild(this.canvas);
 
-        // Create renderer
-        this.renderer = new THREE.WebGLRenderer({
-            canvas: this.canvas,
-            alpha: true,
-            antialias: true
-        });
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
 
         // Create particles
         this.createParticles();
 
-        // Add lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        this.scene.add(ambientLight);
-
-        const pointLight = new THREE.PointLight(0xffffff, 1);
-        pointLight.position.set(5, 5, 5);
-        this.scene.add(pointLight);
-
-        // Handle resize
-        window.addEventListener('resize', () => this.onResize());
-
         // Start animation
         this.animate();
+
+        // Handle resize
+        window.addEventListener('resize', () => this.resize());
+    }
+
+    resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
     }
 
     createParticles() {
-        const geometry = new THREE.BufferGeometry();
-        const positions = [];
-        const velocities = [];
-
+        this.particles = [];
         for (let i = 0; i < this.particleCount; i++) {
-            // Random position
-            positions.push(
-                Math.random() * 20 - 10,
-                Math.random() * 20 - 10,
-                Math.random() * 20 - 10
-            );
-
-            // Random velocity
-            velocities.push({
-                x: (Math.random() - 0.5) * 0.02,
-                y: -Math.random() * 0.05 - 0.02,
-                z: (Math.random() - 0.5) * 0.02
+            this.particles.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                size: Math.random() * 3 + 1,
+                speedX: (Math.random() - 0.5) * 0.5,
+                speedY: (Math.random() - 0.5) * 0.5,
+                opacity: Math.random() * 0.5 + 0.2
             });
         }
-
-        geometry.setAttribute(
-            'position',
-            new THREE.Float32BufferAttribute(positions, 3)
-        );
-
-        // Create material
-        const material = new THREE.PointsMaterial({
-            color: 0xFFFFFF,
-            size: 0.1,
-            transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending
-        });
-
-        // Create particle system
-        const particleSystem = new THREE.Points(geometry, material);
-        this.scene.add(particleSystem);
-
-        this.particles = { system: particleSystem, velocities };
     }
 
     animate() {
-        requestAnimationFrame(() => this.animate());
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Update particle positions
-        const positions = this.particles.system.geometry.attributes.position.array;
-        
-        for (let i = 0; i < this.particleCount; i++) {
-            const i3 = i * 3;
-            
-            // Update position based on velocity
-            positions[i3] += this.particles.velocities[i].x;
-            positions[i3 + 1] += this.particles.velocities[i].y;
-            positions[i3 + 2] += this.particles.velocities[i].z;
+        // Update and draw particles
+        this.particles.forEach(particle => {
+            // Update position
+            particle.x += particle.speedX;
+            particle.y += particle.speedY;
 
-            // Reset particle if it goes below viewport
-            if (positions[i3 + 1] < -10) {
-                positions[i3] = Math.random() * 20 - 10;
-                positions[i3 + 1] = 10;
-                positions[i3 + 2] = Math.random() * 20 - 10;
-            }
+            // Wrap around edges
+            if (particle.x < 0) particle.x = this.canvas.width;
+            if (particle.x > this.canvas.width) particle.x = 0;
+            if (particle.y < 0) particle.y = this.canvas.height;
+            if (particle.y > this.canvas.height) particle.y = 0;
 
-            // Wrap around horizontally
-            if (positions[i3] < -10) positions[i3] = 10;
-            if (positions[i3] > 10) positions[i3] = -10;
-            if (positions[i3 + 2] < -10) positions[i3 + 2] = 10;
-            if (positions[i3 + 2] > 10) positions[i3 + 2] = -10;
-        }
+            // Draw particle
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fillStyle = `rgba(162, 155, 254, ${particle.opacity})`;
+            this.ctx.fill();
+        });
 
-        this.particles.system.geometry.attributes.position.needsUpdate = true;
+        // Connect nearby particles
+        this.connectParticles();
 
-        // Rotate particle system slightly
-        this.particles.system.rotation.y += 0.001;
-
-        // Render scene
-        this.renderer.render(this.scene, this.camera);
+        this.animationFrame = requestAnimationFrame(() => this.animate());
     }
 
-    onResize() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+    connectParticles() {
+        const maxDistance = 150;
+        
+        for (let i = 0; i < this.particles.length; i++) {
+            for (let j = i + 1; j < this.particles.length; j++) {
+                const dx = this.particles[i].x - this.particles[j].x;
+                const dy = this.particles[i].y - this.particles[j].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < maxDistance) {
+                    const opacity = (1 - distance / maxDistance) * 0.2;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
+                    this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
+                    this.ctx.strokeStyle = `rgba(162, 155, 254, ${opacity})`;
+                    this.ctx.lineWidth = 1;
+                    this.ctx.stroke();
+                }
+            }
+        }
     }
 
     destroy() {
-        if (this.renderer) {
-            this.renderer.dispose();
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+        }
+        if (this.canvas && this.canvas.parentNode) {
+            this.canvas.parentNode.removeChild(this.canvas);
         }
     }
 }
 
-// Initialize snow particles when DOM is ready
-let snowParticles;
+// Initialize particle system
+let particleSystem;
 document.addEventListener('DOMContentLoaded', () => {
-    snowParticles = new SnowParticles();
+    particleSystem = new ParticleSystem();
 });
