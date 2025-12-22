@@ -12,10 +12,12 @@ class SupabaseHandler {
     this.userId = null;
     this.attemptsUsed = 0;
     this.isValidated = false;
+
     this.allRewards = [];
     this.rewardCodeMap = {};
+
     this.emailModal = document.getElementById('emailModal');
-    
+
     this.init();
   }
 
@@ -43,7 +45,6 @@ class SupabaseHandler {
 
       // Load rewards (for carousel)
       await this.loadRewardsPreview();
-
     } catch (err) {
       console.error('Supabase init error:', err);
       this.loadFallbackRewards();
@@ -56,21 +57,21 @@ class SupabaseHandler {
 
   showEmailModal() {
     if (!this.emailModal) return;
-    
+
     this.emailModal.classList.add('active');
-    
+
     const input = document.getElementById('emailInput');
     const submitBtn = document.getElementById('emailSubmitBtn');
-    
     if (!input || !submitBtn) return;
 
     input.value = '';
     input.classList.remove('error');
+
     setTimeout(() => input.focus(), 200);
 
     const handleSubmit = async () => {
       const email = input.value.trim();
-      
+
       if (!this.isValidEmail(email)) {
         if (window.quiz?.showToast) {
           quiz.showToast('Please enter a valid email', 2000);
@@ -85,6 +86,7 @@ class SupabaseHandler {
 
       try {
         await this.validateEmailWithMagento();
+
         // After validation, show rules modal
         if (window.quiz?.showRulesModal) {
           quiz.showRulesModal();
@@ -106,14 +108,11 @@ class SupabaseHandler {
       const response = await fetch(CONFIG.urls.magentoApi, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          action: 'getCustomer', 
-          email: this.userEmail 
-        })
+        body: JSON.stringify({ action: 'getCustomer', email: this.userEmail })
       });
 
       const result = await response.json();
-      
+
       if (result.success && result.customer) {
         this.userName = `${result.customer.firstname} ${result.customer.lastname}`;
       } else {
@@ -155,7 +154,6 @@ class SupabaseHandler {
       this.isValidated = true;
       this.updateAttemptsDisplay();
       this.updateHistoryButton();
-
     } catch (err) {
       console.error('Supabase validation failed:', err);
       this.isValidated = false;
@@ -168,11 +166,13 @@ class SupabaseHandler {
     try {
       const { data } = await this.client
         .from('quiz_users')
-        .insert([{
-          email: this.userEmail,
-          name: this.userName,
-          attempts_used: 0
-        }])
+        .insert([
+          {
+            email: this.userEmail,
+            name: this.userName,
+            attempts_used: 0
+          }
+        ])
         .select()
         .single();
 
@@ -199,8 +199,8 @@ class SupabaseHandler {
         .order('min_score', { ascending: false });
 
       const raw = data || [];
-      
-      this.allRewards = raw.map(r => ({
+
+      this.allRewards = raw.map((r) => ({
         min_score: r.min_score,
         max_score: r.max_score,
         title: r.reward_title,
@@ -212,12 +212,11 @@ class SupabaseHandler {
       }));
 
       this.rewardCodeMap = {};
-      raw.forEach(r => {
+      raw.forEach((r) => {
         this.rewardCodeMap[`${r.min_score}-${r.max_score}`] = r.reward_code;
       });
 
       this.renderRewardsCarousel();
-
     } catch (err) {
       console.warn('Rewards load failed, using fallback:', err);
       this.loadFallbackRewards();
@@ -227,148 +226,166 @@ class SupabaseHandler {
   loadFallbackRewards() {
     this.allRewards = CONFIG.fallbackRewards;
     this.rewardCodeMap = {};
-    
-    CONFIG.fallbackRewards.forEach(r => {
+
+    CONFIG.fallbackRewards.forEach((r) => {
       if (r.priority > 0) {
         this.rewardCodeMap[`${r.min_score}-${r.max_score}`] = `REWARD${r.min_score}`;
       }
     });
-    
+
     this.renderRewardsCarousel();
   }
 
+  // UPDATED for bigger images + no dark bg
   renderRewardsCarousel() {
     const container = document.getElementById('rewardsCarousel');
     if (!container) return;
 
     container.innerHTML = '';
-    
+
     // Show ALL rewards in carousel (including priority 0)
-    const carouselRewards = this.allRewards.slice().sort((a, b) => b.min_score - a.min_score);
-    
-    carouselRewards.forEach(reward => {
+    const carouselRewards = this.allRewards
+      .slice()
+      .sort((a, b) => b.min_score - a.min_score);
+
+    carouselRewards.forEach((reward) => {
       const card = document.createElement('div');
       card.className = 'reward-card-compact';
-      
-      const imgStyle = reward.image_url 
-        ? `background-image: url('${reward.image_url}'); background-size: cover; background-position: center;`
-        : `background: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%); display: flex; align-items: center; justify-content: center; font-size: 2rem;`;
-      
+
+      const hasValidImage =
+        reward.image_url &&
+        reward.image_url.startsWith('http') &&
+        !reward.image_url.includes('placeholder');
+
+      let imageHTML;
+      if (hasValidImage) {
+        imageHTML = `<div class="reward-image-compact" style="background-image: url('${reward.image_url}');"></div>`;
+      } else {
+        imageHTML = `<div class="reward-image-compact">${reward.trophy_emoji || '🎁'}</div>`;
+      }
+
       card.innerHTML = `
-        <div class="reward-image-compact" style="${imgStyle}">
-          ${!reward.image_url ? reward.trophy_emoji || '🎁' : ''}
-        </div>
+        ${imageHTML}
         <div class="reward-name-compact">${reward.title}</div>
       `;
-      
+
       container.appendChild(card);
     });
 
     if (carouselRewards.length === 0) {
-      container.innerHTML = '<div style="color: var(--text-secondary); padding: 20px; text-align: center;">Loading rewards...</div>';
+      container.innerHTML =
+        '<div style="color: var(--text-secondary); padding: 20px; text-align: center; font-size: 0.9rem;">Loading rewards...</div>';
     }
   }
 
-  hasRewardAttemptsLeft() {
-    return this.attemptsUsed < 2;
-  }
-
-  // Get reward for score - EXCLUDE priority 0 rewards
-  getRewardForScore(score) {
-    const eligibleRewards = this.allRewards.filter(r => r.priority > 0);
-    return eligibleRewards.find(r => score >= r.min_score && score <= r.max_score) || null;
-  }
-
-  getRewardCodeForScore(score) {
-    const reward = this.getRewardForScore(score);
-    if (!reward) return 'PRACTICE';
-    
-    const key = `${reward.min_score}-${reward.max_score}`;
-    return this.rewardCodeMap[key] || reward.reward_code || 'PRACTICE';
-  }
-
-  async saveQuizResult(score, timeTaken, rewardCode, answers) {
-    if (!this.userId || !this.client) return;
-
-    try {
-      const { error } = await this.client
-        .from('quiz_attempts')
-        .insert([{
-          user_id: this.userId,
-          email: this.userEmail,
-          score: score,
-          time_taken: timeTaken,
-          reward: rewardCode,
-          answers: answers || [],
-          attempt_number: this.attemptsUsed + 1
-        }]);
-
-      if (!error && rewardCode !== 'PRACTICE') {
-        await this.client
-          .from('quiz_users')
-          .update({ attempts_used: this.attemptsUsed + 1 })
-          .eq('id', this.userId);
-        
-        this.attemptsUsed++;
-        this.updateAttemptsDisplay();
-      }
-    } catch (err) {
-      console.error('Failed to save quiz result:', err);
-    }
-  }
-
-  async getLeaderboard() {
-    if (!this.client) return [];
-
-    try {
-      const { data } = await this.client
-        .from('quiz_attempts')
-        .select(`
-          *,
-          quiz_users!inner(email, name)
-        `)
-        .order('score', { ascending: false })
-        .order('time_taken', { ascending: true })
-        .limit(50);
-
-      return data || [];
-    } catch (err) {
-      console.error('Failed to load leaderboard:', err);
-      return [];
-    }
-  }
-
-  async getUserHistory() {
-    if (!this.userId || !this.client) return [];
-
-    try {
-      const { data } = await this.client
-        .from('quiz_attempts')
-        .select('*')
-        .eq('user_id', this.userId)
-        .order('created_at', { ascending: false });
-
-      return data || [];
-    } catch (err) {
-      console.error('Failed to load history:', err);
-      return [];
-    }
-  }
-
+  // Called from quiz.js
   updateAttemptsDisplay() {
-    const el = document.getElementById('attemptsLeft');
-    if (el) {
-      el.textContent = Math.max(0, 2 - this.attemptsUsed);
-    }
+    if (!window.quiz || !quiz.updateAttemptsUI) return;
+    quiz.updateAttemptsUI(this.attemptsUsed, this.isValidated);
   }
 
   updateHistoryButton() {
-    const historyBtn = document.getElementById('historyBtn');
-    if (historyBtn && this.userId) {
-      historyBtn.style.display = 'block';
+    if (!window.quiz || !quiz.updateHistoryState) return;
+    quiz.updateHistoryState(this.userEmail, this.isValidated);
+  }
+
+  // Called by quiz.js when user finishes a run
+  async recordAttempt(score, total, timeTakenSec) {
+    if (!this.client || !this.userEmail || !this.userId) return;
+
+    try {
+      // Update attempts_used
+      const { error: updateError } = await this.client
+        .from('quiz_users')
+        .update({
+          attempts_used: this.attemptsUsed + 1,
+          last_score: score,
+          last_played_at: new Date().toISOString()
+        })
+        .eq('id', this.userId);
+
+      if (updateError) throw updateError;
+      this.attemptsUsed += 1;
+
+      // Insert into history
+      const { error: insertError } = await this.client.from('quiz_attempts').insert([
+        {
+          user_id: this.userId,
+          email: this.userEmail,
+          score,
+          total_questions: total,
+          time_taken_sec: timeTakenSec,
+          played_at: new Date().toISOString()
+        }
+      ]);
+
+      if (insertError) throw insertError;
+
+      this.updateAttemptsDisplay();
+      this.updateHistoryButton();
+    } catch (err) {
+      console.error('Failed to record attempt:', err);
     }
+  }
+
+  // Used by results / leaderboard screens
+  async fetchLeaderboard(limit = 20) {
+    if (!this.client) return [];
+
+    try {
+      const { data, error } = await this.client
+        .from('quiz_attempts')
+        .select('*')
+        .order('score', { ascending: false })
+        .order('time_taken_sec', { ascending: true })
+        .order('played_at', { ascending: true })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.error('Failed to fetch leaderboard:', err);
+      return [];
+    }
+  }
+
+  async fetchUserHistory() {
+    if (!this.client || !this.userEmail) return [];
+
+    try {
+      const { data, error } = await this.client
+        .from('quiz_attempts')
+        .select('*')
+        .eq('email', this.userEmail)
+        .order('played_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.error('Failed to fetch history:', err);
+      return [];
+    }
+  }
+
+  getRewardForScore(score) {
+    if (!this.allRewards || this.allRewards.length === 0) return null;
+
+    const reward = this.allRewards.find(
+      (r) => score >= r.min_score && score <= r.max_score && r.priority > 0
+    );
+
+    if (!reward) return null;
+
+    const key = `${reward.min_score}-${reward.max_score}`;
+    const code = this.rewardCodeMap[key] || null;
+
+    return {
+      ...reward,
+      reward_code: code
+    };
   }
 }
 
-// Initialize Supabase Handler
+// Global instance
 window.supabaseHandler = new SupabaseHandler();
