@@ -11,7 +11,7 @@ class SupabaseHandler {
         this.userId = null;
         this.attemptsUsed = 0;
         this.isValidated = false;
-        this.allRewards = []; // Store all rewards including priority 0
+        this.allRewards = [];
         
         this.init();
     }
@@ -30,7 +30,6 @@ class SupabaseHandler {
             return;
         }
 
-        // Try to get email from URL parameter
         const urlParams = new URLSearchParams(window.location.search);
         const emailParam = urlParams.get('email');
 
@@ -110,7 +109,6 @@ class SupabaseHandler {
         console.log('🔍 Validating email with Magento:', this.userEmail);
         
         try {
-            // Call Netlify function to validate with Magento
             const response = await fetch(CONFIG.urls.magentoApi, {
                 method: 'POST',
                 headers: {
@@ -126,21 +124,17 @@ class SupabaseHandler {
             console.log('📦 Magento API response:', result);
 
             if (result.success && result.customer) {
-                // Customer exists in Magento
                 console.log('✅ Customer found in Magento:', result.customer);
                 this.userName = `${result.customer.firstname} ${result.customer.lastname}`;
             } else {
-                // Customer not found, use email
                 console.log('⚠️ Customer not found in Magento, using email');
                 this.userName = this.userEmail.split('@')[0];
             }
 
-            // Now validate in Supabase
             await this.validateInSupabase();
 
         } catch (err) {
             console.error('❌ Magento validation error:', err);
-            // Fallback to email-based name
             this.userName = this.userEmail.split('@')[0];
             await this.validateInSupabase();
         }
@@ -220,7 +214,7 @@ class SupabaseHandler {
                 .from('reward_config')
                 .select('*')
                 .eq('active', true)
-                .order('min_score', { ascending: false }); // Order by score desc
+                .order('min_score', { ascending: false });
 
             console.log('✅ Rewards data loaded:', data);
 
@@ -237,10 +231,8 @@ class SupabaseHandler {
 
             carousel.innerHTML = '';
 
-            // Store all rewards (including priority 0)
             this.allRewards = data || CONFIG.rewards;
             
-            // Filter only rewards to DISPLAY (priority >= 0, including 0)
             const displayRewards = this.allRewards.filter(r => r.priority >= 0);
             console.log(`📦 Displaying ${displayRewards.length} rewards (including priority 0)`);
 
@@ -258,7 +250,7 @@ class SupabaseHandler {
                 const title = reward.reward_title || reward.title;
                 
                 const imageHTML = reward.image_url 
-                    ? `<img src="${reward.image_url}" alt="${title}" class="reward-image-compact" onerror="this.style.display='none'; console.error('Image failed:', '${reward.image_url}')">` 
+                    ? `<img src="${reward.image_url}" alt="${title}" class="reward-image-compact" onerror="this.style.display='none';">` 
                     : `<div class="reward-image-compact" style="display:flex;align-items:center;justify-content:center;font-size:2.5rem;">${reward.trophy_emoji || reward.trophy}</div>`;
                 
                 card.innerHTML = `
@@ -286,17 +278,12 @@ class SupabaseHandler {
         console.log('📦 Loading fallback rewards from CONFIG...');
         
         const carousel = document.getElementById('rewardsCarousel');
-        if (!carousel) {
-            console.error('❌ Carousel element not found!');
-            return;
-        }
+        if (!carousel) return;
         
         carousel.innerHTML = '';
         this.allRewards = CONFIG.rewards;
 
         CONFIG.rewards.forEach((reward, index) => {
-            console.log(`  → Config Reward ${index + 1}:`, reward.title);
-            
             const card = document.createElement('div');
             card.className = 'reward-card-compact';
             card.innerHTML = `
@@ -312,12 +299,10 @@ class SupabaseHandler {
     getRewardForScore(score) {
         console.log('🎁 Getting reward for score:', score);
         
-        // Filter rewards with priority > 0 (awardable)
         const awardableRewards = this.allRewards.filter(r => (r.priority || 1) > 0);
         
         console.log('📦 Awardable rewards (priority > 0):', awardableRewards.length);
         
-        // Find matching reward
         const reward = awardableRewards.find(r => 
             score >= r.min_score && score <= r.max_score
         );
