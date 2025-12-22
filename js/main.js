@@ -10,7 +10,7 @@ console.log('📍 Environment:', {
     screen: `${window.innerWidth}x${window.innerHeight}`
 });
 
-// Log all errors
+// Global error handler
 window.addEventListener('error', (e) => {
     console.error('❌ GLOBAL ERROR:', {
         message: e.message,
@@ -21,7 +21,7 @@ window.addEventListener('error', (e) => {
     });
 });
 
-// Log unhandled promise rejections
+// Unhandled promise rejections
 window.addEventListener('unhandledrejection', (e) => {
     console.error('❌ UNHANDLED PROMISE REJECTION:', {
         reason: e.reason,
@@ -29,7 +29,7 @@ window.addEventListener('unhandledrejection', (e) => {
     });
 });
 
-// Check if all dependencies loaded
+// Dependency check
 setTimeout(() => {
     console.log('🔍 Dependency Check:', {
         CONFIG: typeof CONFIG !== 'undefined' ? '✅' : '❌',
