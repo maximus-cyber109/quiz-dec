@@ -286,18 +286,15 @@ class SupabaseHandler {
     quiz.updateHistoryState(this.userEmail, this.isValidated);
   }
 
-  // ✅ NEW: Check if user has reward attempts left
   hasRewardAttemptsLeft() {
     return this.attemptsUsed < 2;
   }
 
-  // ✅ NEW: Get reward code for score
   getRewardCodeForScore(score) {
     const reward = this.getRewardForScore(score);
     return reward?.reward_code || 'PRACTICE';
   }
 
-  // ✅ NEW: Save quiz result
   async saveQuizResult(score, timeTaken, rewardCode, answers) {
     if (!this.client || !this.userEmail || !this.userId) {
       console.warn('Cannot save result - user not validated');
@@ -362,7 +359,6 @@ class SupabaseHandler {
     };
   }
 
-  // Alias methods for quiz.js compatibility
   async getLeaderboard(limit = 20) {
     return await this.fetchLeaderboard(limit);
   }
