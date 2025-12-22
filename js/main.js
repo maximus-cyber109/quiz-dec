@@ -10,7 +10,6 @@ console.log('📍 Environment:', {
     screen: `${window.innerWidth}x${window.innerHeight}`
 });
 
-// Global error handler
 window.addEventListener('error', (e) => {
     console.error('❌ GLOBAL ERROR:', {
         message: e.message,
@@ -21,7 +20,6 @@ window.addEventListener('error', (e) => {
     });
 });
 
-// Unhandled promise rejections
 window.addEventListener('unhandledrejection', (e) => {
     console.error('❌ UNHANDLED PROMISE REJECTION:', {
         reason: e.reason,
@@ -29,7 +27,6 @@ window.addEventListener('unhandledrejection', (e) => {
     });
 });
 
-// Dependency check
 setTimeout(() => {
     console.log('🔍 Dependency Check:', {
         CONFIG: typeof CONFIG !== 'undefined' ? '✅' : '❌',
@@ -41,7 +38,6 @@ setTimeout(() => {
     });
 }, 1000);
 
-// Performance monitoring
 if (window.performance && window.performance.timing) {
     window.addEventListener('load', () => {
         setTimeout(() => {
