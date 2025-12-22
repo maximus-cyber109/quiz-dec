@@ -3,238 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="PinkBlue Christmas Dental Challenge 2025">
-    <title>🎄 PinkBlue Christmas Challenge | Win Big Rewards</title>
+    <meta name="theme-color" content="#6C5CE7">
+    <title>PinkBlue Dental Challenge 2025 | Test Your Expertise</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
     
     <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
     
-    <!-- Three.js for 3D snow -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
-    <!-- GSAP for smooth animations -->
+    <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    
-    <!-- Particles.js -->
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles-preset-snow@2.12.0/tsparticles.preset.snow.bundle.min.js"></script>
-    
-    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <!-- 3D Snow Canvas -->
-    <canvas id="snow-canvas"></canvas>
+    
+    <!-- Gradient Background -->
+    <div class="gradient-bg"></div>
+    <div class="mesh-gradient"></div>
 
-    <!-- Christmas Lights Overlay -->
-    <div class="christmas-lights">
-        <div class="light red"></div>
-        <div class="light blue"></div>
-        <div class="light green"></div>
-        <div class="light yellow"></div>
-        <div class="light red"></div>
-        <div class="light blue"></div>
-        <div class="light green"></div>
-        <div class="light yellow"></div>
-    </div>
-
-    <!-- Main Container -->
-    <div class="app-container">
+    <!-- Main App Container -->
+    <div class="app-wrapper">
         
-        <!-- Header -->
-        <header class="header" id="mainHeader">
-            <div class="header-content">
-                <h1 class="logo">
-                    <span class="logo-icon">🎄</span>
-                    <span class="logo-text">PinkBlue Christmas Challenge</span>
-                    <span class="logo-icon">🎁</span>
-                </h1>
-                <p class="tagline">Test Your Dental Expertise & Win Amazing Rewards!</p>
+        <!-- Top Navigation -->
+        <nav class="top-nav" id="topNav">
+            <div class="nav-content">
+                <div class="logo-mark">PB</div>
+                <div class="nav-stats">
+                    <div class="stat-pill">
+                        <span class="stat-icon">⚡</span>
+                        <span id="attemptsLeft">2</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Screen: Start -->
+        <section class="screen active" id="startScreen">
+            <div class="screen-content">
                 
+                <!-- Hero Section -->
+                <div class="hero-section">
+                    <div class="floating-icon">
+                        <div class="icon-glow"></div>
+                        <svg class="hero-icon" viewBox="0 0 100 100" fill="none">
+                            <circle cx="50" cy="50" r="45" fill="url(#iconGradient)"/>
+                            <path d="M50 25 L60 40 L75 45 L60 55 L60 70 L50 60 L40 70 L40 55 L25 45 L40 40 Z" fill="white" opacity="0.9"/>
+                        </svg>
+                    </div>
+                    
+                    <h1 class="hero-title">
+                        <span class="title-line">Dental Excellence</span>
+                        <span class="title-line gradient-text">Challenge 2025</span>
+                    </h1>
+                    
+                    <p class="hero-subtitle">
+                        Test your dental expertise in 2 minutes.<br>
+                        Compete globally. Win exclusive rewards.
+                    </p>
+                </div>
+
+                <!-- Stats Grid -->
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-icon">⚡</div>
-                        <div class="stat-value" id="attemptsLeft">2</div>
-                        <div class="stat-label">Attempts Left</div>
+                        <div class="stat-icon-wrapper">
+                            <span class="stat-emoji">❓</span>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">10</div>
+                            <div class="stat-label">Questions</div>
+                        </div>
                     </div>
+                    
                     <div class="stat-card">
-                        <div class="stat-icon">❓</div>
-                        <div class="stat-value">10</div>
-                        <div class="stat-label">Questions</div>
+                        <div class="stat-icon-wrapper">
+                            <span class="stat-emoji">⏱️</span>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">2:00</div>
+                            <div class="stat-label">Time Limit</div>
+                        </div>
                     </div>
+                    
                     <div class="stat-card">
-                        <div class="stat-icon">⏰</div>
-                        <div class="stat-value">2:00</div>
-                        <div class="stat-label">Time Limit</div>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Start Screen -->
-        <section class="screen active" id="startScreen">
-            <div class="card glass-card">
-                <div class="card-header">
-                    <div class="christmas-icon">🎅</div>
-                    <h2 class="card-title">Ho Ho Ho! Ready for the Challenge?</h2>
-                    <p class="card-subtitle">Answer 10 dental questions in 2 minutes and unlock exclusive Christmas rewards!</p>
-                </div>
-
-                <div class="rules-container">
-                    <h3 class="rules-title">
-                        <span>🎯</span>
-                        <span>How It Works</span>
-                    </h3>
-                    <div class="rules-grid">
-                        <div class="rule-item">
-                            <span class="rule-emoji">✨</span>
-                            <span>10 professional dental questions</span>
+                        <div class="stat-icon-wrapper">
+                            <span class="stat-emoji">🎁</span>
                         </div>
-                        <div class="rule-item">
-                            <span class="rule-emoji">⏱️</span>
-                            <span>2 minutes countdown timer</span>
-                        </div>
-                        <div class="rule-item">
-                            <span class="rule-emoji">🎁</span>
-                            <span>Better scores = Bigger rewards!</span>
-                        </div>
-                        <div class="rule-item">
-                            <span class="rule-emoji">🔥</span>
-                            <span>2 reward attempts + unlimited practice</span>
-                        </div>
-                        <div class="rule-item">
-                            <span class="rule-emoji">📱</span>
-                            <span>Share on WhatsApp to challenge friends</span>
-                        </div>
-                        <div class="rule-item">
-                            <span class="rule-emoji">🏆</span>
-                            <span>Compete on the global leaderboard</span>
+                        <div class="stat-info">
+                            <div class="stat-value">2</div>
+                            <div class="stat-label">Chances</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="button-group">
-                    <button class="btn btn-primary btn-lg" id="startBtn">
-                        <span class="btn-icon">🚀</span>
-                        <span>Start Challenge</span>
-                        <span class="btn-shine"></span>
+                <!-- How It Works -->
+                <div class="info-card">
+                    <h3 class="info-title">How It Works</h3>
+                    <div class="info-steps">
+                        <div class="info-step">
+                            <div class="step-number">1</div>
+                            <div class="step-text">Answer 10 dental questions</div>
+                        </div>
+                        <div class="info-step">
+                            <div class="step-number">2</div>
+                            <div class="step-text">Complete within 2 minutes</div>
+                        </div>
+                        <div class="info-step">
+                            <div class="step-number">3</div>
+                            <div class="step-text">Unlock rewards based on score</div>
+                        </div>
+                        <div class="info-step">
+                            <div class="step-number">4</div>
+                            <div class="step-text">Climb the global leaderboard</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-stack">
+                    <button class="btn btn-primary btn-glow" id="startBtn">
+                        <span class="btn-text">Start Challenge</span>
+                        <span class="btn-icon">→</span>
                     </button>
+                    
                     <button class="btn btn-secondary" id="leaderboardBtn">
                         <span class="btn-icon">🏆</span>
-                        <span>View Leaderboard</span>
+                        <span class="btn-text">Leaderboard</span>
                     </button>
                 </div>
+
             </div>
         </section>
 
-        <!-- Quiz Screen -->
+        <!-- Screen: Quiz -->
         <section class="screen" id="quizScreen">
-            <div class="quiz-header">
+            <div class="screen-content">
+                
+                <!-- Timer Card -->
                 <div class="timer-card" id="timerCard">
-                    <div class="timer-icon">⏱️</div>
-                    <div class="timer-value" id="timerValue">2:00</div>
                     <div class="timer-label">Time Remaining</div>
+                    <div class="timer-display" id="timerDisplay">2:00</div>
+                    <div class="timer-progress">
+                        <div class="timer-progress-bar" id="timerProgress"></div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="progress-container">
-                <div class="progress-track">
-                    <div class="progress-fill" id="progressFill"></div>
+                <!-- Progress Indicator -->
+                <div class="progress-pills">
                     <div class="progress-text" id="progressText">Question 1 of 10</div>
+                    <div class="pill-container" id="progressPills">
+                        <!-- Pills generated dynamically -->
+                    </div>
                 </div>
-            </div>
 
-            <div class="card glass-card question-card">
-                <div class="question-header">
-                    <span class="question-number" id="questionNumber">01</span>
-                    <span class="question-divider">/</span>
-                    <span class="question-total">10</span>
+                <!-- Question Card -->
+                <div class="question-card">
+                    <div class="question-number">
+                        <span id="qNumber">01</span>
+                        <span class="q-separator">/</span>
+                        <span class="q-total">10</span>
+                    </div>
+                    <h2 class="question-text" id="questionText"></h2>
                 </div>
-                <h3 class="question-text" id="questionText"></h3>
-            </div>
 
-            <div class="options-container" id="optionsContainer">
-                <!-- Options dynamically loaded -->
-            </div>
+                <!-- Options -->
+                <div class="options-list" id="optionsList">
+                    <!-- Options generated dynamically -->
+                </div>
 
-            <button class="btn btn-primary btn-lg btn-disabled" id="nextBtn" disabled>
-                <span>Next Question</span>
-                <span class="btn-icon">→</span>
-            </button>
+                <!-- Next Button -->
+                <button class="btn btn-primary btn-disabled" id="nextBtn" disabled>
+                    <span class="btn-text">Next Question</span>
+                    <span class="btn-icon">→</span>
+                </button>
+
+            </div>
         </section>
 
-        <!-- Results Screen -->
+        <!-- Screen: Results -->
         <section class="screen" id="resultsScreen">
-            <div class="card glass-card results-card">
-                <div class="confetti-container" id="confetti"></div>
+            <div class="screen-content">
                 
-                <div class="trophy-animation">
-                    <div class="trophy-icon" id="trophyIcon">🏆</div>
+                <!-- Trophy Animation -->
+                <div class="trophy-container">
+                    <div class="trophy-glow"></div>
+                    <div class="trophy-emoji" id="trophyEmoji">🏆</div>
                 </div>
 
-                <h2 class="results-title" id="resultsTitle">Congratulations!</h2>
-                
-                <div class="score-circle">
-                    <svg class="score-ring" width="200" height="200">
-                        <circle cx="100" cy="100" r="90" class="score-ring-bg"/>
-                        <circle cx="100" cy="100" r="90" class="score-ring-fill" id="scoreRing"/>
+                <!-- Score Circle -->
+                <div class="score-circle-wrapper">
+                    <svg class="score-circle" viewBox="0 0 200 200">
+                        <circle class="score-bg" cx="100" cy="100" r="90"/>
+                        <circle class="score-fill" cx="100" cy="100" r="90" id="scoreCircle"/>
                     </svg>
                     <div class="score-content">
                         <div class="score-value" id="scoreValue">0</div>
-                        <div class="score-total">out of 10</div>
+                        <div class="score-label">out of 10</div>
                     </div>
                 </div>
 
+                <!-- Results Title -->
+                <h2 class="results-title" id="resultsTitle">Amazing Work!</h2>
+                <p class="results-subtitle" id="resultsSubtitle">You're in the top 10%</p>
+
+                <!-- Reward Card -->
                 <div class="reward-card" id="rewardCard">
-                    <div class="reward-badge">🎁</div>
-                    <h3 class="reward-title" id="rewardTitle">Your Christmas Reward</h3>
+                    <div class="reward-badge">
+                        <span class="reward-icon">🎁</span>
+                    </div>
+                    <h3 class="reward-title" id="rewardTitle">Your Reward</h3>
                     <p class="reward-desc" id="rewardDesc"></p>
                     
-                    <div class="coupon-container">
+                    <div class="coupon-box">
+                        <div class="coupon-label">Coupon Code</div>
                         <div class="coupon-code" id="couponCode">LOADING...</div>
-                        <button class="btn btn-copy" id="copyBtn">
-                            <span class="btn-icon">📋</span>
-                            <span>Copy Code</span>
+                        <button class="btn-copy" id="copyBtn">
+                            <span class="copy-icon">📋</span>
+                            <span class="copy-text">Copy Code</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="button-group">
+                <!-- Action Buttons -->
+                <div class="button-stack">
                     <button class="btn btn-whatsapp" id="shareBtn">
-                        <span class="btn-icon">📱</span>
-                        <span>Share on WhatsApp</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        <span class="btn-text">Share on WhatsApp</span>
                     </button>
+                    
                     <button class="btn btn-primary" id="redeemBtn">
-                        <span class="btn-icon">🛒</span>
-                        <span>Redeem at PinkBlue.in</span>
+                        <span class="btn-text">Redeem at PinkBlue.in</span>
+                        <span class="btn-icon">→</span>
                     </button>
+                    
                     <button class="btn btn-secondary" id="tryAgainBtn">
                         <span class="btn-icon">🔄</span>
-                        <span>Try Again</span>
+                        <span class="btn-text">Try Again</span>
                     </button>
                 </div>
+
             </div>
         </section>
 
-        <!-- Leaderboard Screen -->
+        <!-- Screen: Leaderboard -->
         <section class="screen" id="leaderboardScreen">
-            <div class="card glass-card leaderboard-card">
-                <div class="card-header">
-                    <h2 class="card-title">🏆 Global Leaderboard</h2>
-                    <p class="card-subtitle">Top Dental Experts of 2025</p>
+            <div class="screen-content">
+                
+                <div class="screen-header">
+                    <button class="back-btn" id="backBtn">
+                        <span class="back-icon">←</span>
+                    </button>
+                    <h2 class="screen-title">Global Leaderboard</h2>
+                    <div class="header-spacer"></div>
                 </div>
 
                 <div class="leaderboard-container" id="leaderboardContainer">
-                    <!-- Dynamically loaded -->
+                    <div class="loader">
+                        <div class="loader-spinner"></div>
+                    </div>
                 </div>
 
-                <button class="btn btn-secondary" id="backBtn">
-                    <span class="btn-icon">←</span>
-                    <span>Back to Home</span>
-                </button>
             </div>
         </section>
 
@@ -242,16 +274,33 @@
 
     <!-- Countdown Overlay -->
     <div class="countdown-overlay" id="countdownOverlay">
-        <div class="countdown-circle">
-            <div class="countdown-number" id="countdownNumber">3</div>
+        <div class="countdown-content">
+            <div class="countdown-circle">
+                <div class="countdown-number" id="countdownNumber">3</div>
+            </div>
+            <div class="countdown-text">Get Ready!</div>
         </div>
     </div>
 
     <!-- Toast Notification -->
     <div class="toast" id="toast">
-        <span class="toast-icon" id="toastIcon">✅</span>
-        <span class="toast-message" id="toastMessage">Success!</span>
+        <span class="toast-icon" id="toastIcon">✓</span>
+        <span class="toast-message" id="toastMessage"></span>
     </div>
+
+    <!-- SVG Definitions -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#6C5CE7"/>
+                <stop offset="100%" style="stop-color:#A29BFE"/>
+            </linearGradient>
+            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#00F2FE"/>
+                <stop offset="100%" style="stop-color:#4FACFE"/>
+            </linearGradient>
+        </defs>
+    </svg>
 
     <!-- Scripts -->
     <script src="js/config.js"></script>
