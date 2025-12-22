@@ -49,15 +49,20 @@
         <!-- Rewards preview -->
         <section class="rewards-preview-compact">
           <h2 class="section-title-compact">Rewards you can win</h2>
-          <div id="rewardsCarousel" class="rewards-carousel-compact"></div>
+          <div id="rewardsCarousel" class="rewards-carousel-compact">
+            <div class="reward-card-compact">
+              <div class="reward-image-compact" style="background-image:url('https://via.placeholder.com/160x80/6C5CE7/FFFFFF?text=REWARD')"></div>
+              <div class="reward-name-compact">Loading rewards...</div>
+            </div>
+          </div>
         </section>
 
         <!-- Buttons -->
         <div class="button-stack">
-          <button id="startBtn" class="btn btn-primary btn-large btn-glow">
-            <span class="btn-text">Start Quiz</span>
+          <button id="startBtn" class="btn btn-primary btn-large btn-glow" disabled>
+            <span class="btn-text">Loading...</span>
           </button>
-          <button id="leaderboardBtn" class="btn btn-secondary btn-small">
+          <button id="leaderboardBtn" class="btn btn-secondary btn-small" style="display:none;">
             <span class="btn-text">View Leaderboard</span>
           </button>
           <button id="historyBtn" class="btn btn-secondary btn-small" style="display:none;">
@@ -68,7 +73,7 @@
     </main>
 
     <!-- QUIZ SCREEN -->
-    <main id="quizScreen" class="screen">
+    <main id="quizScreen" class="screen" style="display:none;">
       <div class="screen-content">
         <div id="noRewardsMessage" class="no-rewards-message" style="display:none;">
           <div class="no-rewards-icon">📚</div>
@@ -110,7 +115,7 @@
     </main>
 
     <!-- RESULTS SCREEN -->
-    <main id="resultsScreen" class="screen">
+    <main id="resultsScreen" class="screen" style="display:none;">
       <div class="screen-content">
         <h2 id="resultsTitle" class="results-title">Quiz complete!</h2>
         <p id="resultsSubtitle" class="results-subtitle">Your performance summary.</p>
@@ -158,31 +163,35 @@
     </main>
 
     <!-- LEADERBOARD -->
-    <main id="leaderboardScreen" class="screen">
+    <main id="leaderboardScreen" class="screen" style="display:none;">
       <div class="screen-content">
         <div class="screen-header">
           <button id="backBtn" class="back-btn">←</button>
           <h2 class="screen-title">Leaderboard</h2>
           <div class="header-spacer"></div>
         </div>
-        <div id="leaderboardContainer" class="leaderboard-container"></div>
+        <div id="leaderboardContainer" class="leaderboard-container">
+          <div class="loader"><div class="loader-spinner"></div></div>
+        </div>
       </div>
     </main>
 
     <!-- HISTORY -->
-    <main id="historyScreen" class="screen">
+    <main id="historyScreen" class="screen" style="display:none;">
       <div class="screen-content">
         <div class="screen-header">
           <button id="backFromHistory" class="back-btn">←</button>
           <h2 class="screen-title">My Attempts</h2>
           <div class="header-spacer"></div>
         </div>
-        <div id="historyContainer" class="history-container"></div>
+        <div id="historyContainer" class="history-container">
+          <div class="loader"><div class="loader-spinner"></div></div>
+        </div>
       </div>
     </main>
 
     <!-- RULES MODAL -->
-    <div id="rulesModal" class="modal">
+    <div id="rulesModal" class="modal" style="display:none;">
       <div class="modal-content">
         <h3>Quiz Rules</h3>
         <ul>
@@ -198,7 +207,7 @@
     </div>
 
     <!-- EMAIL MODAL -->
-    <div id="emailModal" class="modal">
+    <div id="emailModal" class="modal" style="display:none;">
       <div class="modal-content">
         <h3>Enter your email</h3>
         <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:16px;">
@@ -212,7 +221,7 @@
     </div>
 
     <!-- COUNTDOWN OVERLAY -->
-    <div id="countdownOverlay" class="countdown-overlay">
+    <div id="countdownOverlay" class="countdown-overlay" style="display:none;">
       <div id="countdownNumber">3</div>
     </div>
 
