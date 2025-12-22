@@ -32,9 +32,9 @@
             <div class="nav-content">
                 <div class="logo-mark">PB Quizmas</div>
                 <div class="nav-stats">
-                    <div class="stat-pill">
-                        <span class="stat-icon">⚡</span>
-                        <span id="attemptsLeft">2</span>
+                    <div class="attempts-badge">
+                        <div class="attempts-label">Attempts Left</div>
+                        <div class="attempts-value" id="attemptsLeft">2</div>
                     </div>
                 </div>
             </div>
@@ -50,7 +50,7 @@
                         <span class="gradient-text">PinkBlue Quizmas</span>
                     </h1>
                     <p class="hero-subtitle-compact">
-                        10 questions. 2 minutes. Win exclusive rewards.
+                        10 questions. 2 minutes. Epic rewards await.
                     </p>
                 </div>
 
@@ -130,18 +130,8 @@
         <section class="screen" id="resultsScreen">
             <div class="screen-content">
                 
-                <!-- Trophy Animation -->
-                <div class="trophy-container">
-                    <div class="trophy-glow"></div>
-                    <div class="trophy-emoji" id="trophyEmoji">🏆</div>
-                </div>
-
-                <!-- Score Circle -->
+                <!-- Score Box (No Crown, No Circle) -->
                 <div class="score-circle-wrapper">
-                    <svg class="score-circle" viewBox="0 0 200 200">
-                        <circle class="score-bg" cx="100" cy="100" r="90"/>
-                        <circle class="score-fill" cx="100" cy="100" r="90" id="scoreCircle"/>
-                    </svg>
                     <div class="score-content">
                         <div class="score-value" id="scoreValue">0</div>
                         <div class="score-label">out of 10</div>
@@ -149,10 +139,19 @@
                 </div>
 
                 <!-- Results Title -->
-                <h2 class="results-title" id="resultsTitle">Great Job!</h2>
-                <p class="results-subtitle" id="resultsSubtitle">You scored well</p>
+                <h2 class="results-title" id="resultsTitle">Nice One!</h2>
+                <p class="results-subtitle" id="resultsSubtitle">You nailed it</p>
 
-                <!-- Reward Card -->
+                <!-- No Rewards Message (Hidden by default) -->
+                <div class="no-rewards-message" id="noRewardsMessage" style="display: none;">
+                    <div class="no-rewards-icon">🎯</div>
+                    <div class="no-rewards-title">Practice Mode</div>
+                    <div class="no-rewards-text">
+                        You've used all reward attempts. Keep playing to test your dental knowledge!
+                    </div>
+                </div>
+
+                <!-- Reward Card (Hidden when no attempts left) -->
                 <div class="reward-card" id="rewardCard">
                     <div class="reward-badge">
                         <span class="reward-icon">🎁</span>
@@ -261,19 +260,19 @@
     <div class="modal-overlay" id="rulesModal">
         <div class="modal-content modal-rules">
             <div class="modal-header">
-                <h3 class="modal-title">Quiz Rules</h3>
+                <h3 class="modal-title">Quick Rules ⚡</h3>
             </div>
             <div class="modal-body">
                 <ul class="rules-list">
-                    <li>Answer 10 dental knowledge questions</li>
-                    <li>Complete within 2 minutes ⏱️</li>
-                    <li>Win rewards based on your score</li>
-                    <li>You get 2 free attempts with rewards</li>
+                    <li>10 dental trivia questions</li>
+                    <li>You've got 2 minutes ⏱️</li>
+                    <li>Higher score = Better rewards</li>
+                    <li>2 free attempts with goodies</li>
                 </ul>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary btn-large" id="rulesOkayBtn">
-                    <span class="btn-text">Got It, Let's Go</span>
+                    <span class="btn-text">Let's Roll</span>
                     <span class="btn-icon">→</span>
                 </button>
             </div>
@@ -295,20 +294,6 @@
         <span class="toast-icon" id="toastIcon">✓</span>
         <span class="toast-message" id="toastMessage"></span>
     </div>
-
-    <!-- SVG Definitions -->
-    <svg width="0" height="0" style="position: absolute;">
-        <defs>
-            <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#6C5CE7"/>
-                <stop offset="100%" style="stop-color:#A29BFE"/>
-            </linearGradient>
-            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#00F2FE"/>
-                <stop offset="100%" style="stop-color:#4FACFE"/>
-            </linearGradient>
-        </defs>
-    </svg>
 
     <!-- Scripts -->
     <script src="js/config.js"></script>
