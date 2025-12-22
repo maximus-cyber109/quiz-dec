@@ -304,7 +304,7 @@ class SupabaseHandler {
     try {
       const attemptNumber = this.attemptsUsed + 1;
 
-      // Insert quiz attempt
+      // Insert quiz attempt - created_at will auto-populate
       const { error: insertError } = await this.client
         .from('quiz_attempts')
         .insert([{
@@ -314,8 +314,7 @@ class SupabaseHandler {
           total_questions: 10,
           time_taken: timeTaken,
           reward: rewardCode,
-          attempt_number: attemptNumber,
-          played_at: new Date().toISOString()
+          attempt_number: attemptNumber
         }]);
 
       if (insertError) throw insertError;
@@ -326,7 +325,7 @@ class SupabaseHandler {
         .update({
           attempts_used: this.attemptsUsed + 1,
           last_score: score,
-          last_played_at: new Date().toISOString()
+          updated_at: new Date().toISOString()
         })
         .eq('id', this.userId);
 
@@ -376,7 +375,7 @@ class SupabaseHandler {
         .select('*')
         .order('score', { ascending: false })
         .order('time_taken', { ascending: true })
-        .order('played_at', { ascending: true })
+        .order('created_at', { ascending: true })
         .limit(limit);
 
       if (error) throw error;
@@ -395,7 +394,7 @@ class SupabaseHandler {
         .from('quiz_attempts')
         .select('*')
         .eq('email', this.userEmail)
-        .order('played_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(20);
 
       if (error) throw error;
