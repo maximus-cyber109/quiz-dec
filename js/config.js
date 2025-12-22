@@ -6,7 +6,7 @@
 const CONFIG = {
     // Supabase Configuration
     supabase: {
-          url: 'https://aaqkdaakxxgobwdwlega.supabase.co',
+        url: 'https://aaqkdaakxxgobwdwlega.supabase.co',
         key: 'sb_publishable_VTuc5nhwicP9shHxWMmT-Q_XJK-NVMf'
     },
 
@@ -20,7 +20,7 @@ const CONFIG = {
     // URLs
     urls: {
         redeem: 'https://pinkblue.in',
-        support: 'https://pinkblue.in/contact'
+        magentoApi: '/.netlify/functions/quiz-api'
     },
 
     // Animations
@@ -31,8 +31,8 @@ const CONFIG = {
 
     // Share Message Template
     shareMessage: (score, total, name) => {
-        return `🎄 I just scored ${score}/${total} in PinkBlue Quizmas 2025!\n\n` +
-               `Think you can beat my score? Take the challenge now! 🦷✨\n\n` +
+        return `I just scored ${score}/${total} in PinkBlue Quizmas 2025!\n\n` +
+               `Think you can beat my score? Take the challenge now!\n\n` +
                `https://your-quiz-url.netlify.app`;
     },
 
@@ -41,47 +41,52 @@ const CONFIG = {
         {
             minScore: 9,
             maxScore: 10,
-            title: '🤯 LEGENDARY',
+            title: 'FREE Speedendo Rotary File',
             trophy: '👑',
-            subtitle: 'Top 1% - Basically a Dental Deity',
-            description: 'FREE Speedendo Calcipro Rotary File worth ₹1,250!',
-            coupon: 'DENTAL9X'
+            subtitle: 'Perfect Score',
+            description: 'FREE Speedendo Calcipro Rotary File worth ₹1,250',
+            coupon: 'DENTAL9X',
+            priority: 1
         },
         {
             minScore: 7,
             maxScore: 8,
-            title: '😎 EXPERT',
+            title: '10% PB Cashback',
             trophy: '🏆',
-            subtitle: 'Top 5% - Expert Mode Unlocked',
-            description: '10% PB CASHBACK on your entire order!',
-            coupon: 'EXPERT10'
+            subtitle: 'Excellent Performance',
+            description: '10% PB Cashback on your entire order',
+            coupon: 'EXPERT10',
+            priority: 1
         },
         {
             minScore: 5,
             maxScore: 6,
-            title: '⭐ GREAT',
+            title: 'Flitt Diamond Burs Pack',
             trophy: '⭐',
-            subtitle: 'Top 15% - Solid Performance',
-            description: 'Flitt Diamond Burs Pack worth ₹499 FREE!',
-            coupon: 'GREAT5X'
+            subtitle: 'Great Job',
+            description: 'Flitt Diamond Burs Pack worth ₹499 FREE',
+            coupon: 'GREAT5X',
+            priority: 1
         },
         {
             minScore: 3,
             maxScore: 4,
-            title: '💪 GOOD START',
+            title: 'Flat 5% Off',
             trophy: '💪',
-            subtitle: 'Keep Learning!',
-            description: 'Flat 5% Off your next order!',
-            coupon: 'START5'
+            subtitle: 'Good Start',
+            description: 'Flat 5% Off your next order',
+            coupon: 'START5',
+            priority: 1
         },
         {
             minScore: 0,
             maxScore: 2,
-            title: '📚 KEEP LEARNING',
+            title: 'Better Luck Next Time',
             trophy: '📚',
-            subtitle: 'Practice Makes Perfect',
-            description: 'Try again! Every expert started somewhere.',
-            coupon: 'TRYAGAIN'
+            subtitle: 'Keep Practicing',
+            description: 'Try again to improve your score',
+            coupon: 'TRYAGAIN',
+            priority: 1
         }
     ],
 
@@ -210,7 +215,6 @@ const CONFIG = {
     ]
 };
 
-// Log configuration loaded
 console.log('✅ CONFIG loaded:', {
     questions: CONFIG.questions.length,
     rewards: CONFIG.rewards.length,
