@@ -168,67 +168,102 @@ class SupabaseHandler {
     }
 
     async loadRewardsPreview() {
-        try {
-            const { data, error } = await this.client
-                .from('reward_config')
-                .select('*')
-                .eq('active', true)
-                .order('priority', { ascending: true });
+    console.log('🎁 Loading rewards preview...');
+    
+    try {
+        const { data, error } = await this.client
+            .from('reward_config')
+            .select('*')
+            .eq('active', true)
+            .order('priority', { ascending: true });
 
-            if (error) throw error;
+        console.log('✅ Rewards data loaded:', data);
 
-            const carousel = document.getElementById('rewardsCarousel');
-            carousel.innerHTML = '';
-
-            const rewards = data || CONFIG.rewards;
-
-            rewards.forEach((reward, index) => {
-                const card = document.createElement('div');
-                card.className = 'reward-preview-card';
-                
-                const imageHTML = reward.image_url 
-                    ? `<img src="${reward.image_url}" alt="${reward.reward_title}" class="reward-preview-image" onerror="this.style.display='none'">` 
-                    : `<div class="reward-preview-trophy">${reward.trophy_emoji}</div>`;
-                
-                card.innerHTML = `
-                    ${imageHTML}
-                    <div class="reward-preview-title">${reward.reward_title}</div>
-                    <div class="reward-preview-score">Score ${reward.min_score}-${reward.max_score} out of 10</div>
-                    <div class="reward-preview-desc">${reward.reward_description}</div>
-                `;
-
-                carousel.appendChild(card);
-
-                // Stagger animation
-                gsap.fromTo(card,
-                    { opacity: 0, x: 50 },
-                    { opacity: 1, x: 0, duration: 0.5, delay: index * 0.1, ease: 'back.out(1.7)' }
-                );
-            });
-
-        } catch (err) {
-            console.error('Error loading rewards preview:', err);
-            // Fallback to config rewards
-            this.loadRewardsFromConfig();
+        if (error) {
+            console.error('❌ Supabase error loading rewards:', error);
+            throw error;
         }
-    }
 
-    loadRewardsFromConfig() {
         const carousel = document.getElementById('rewardsCarousel');
+        if (!carousel) {
+            console.error('❌ Rewards carousel element not found!');
+            return;
+        }
+
         carousel.innerHTML = '';
 
-        CONFIG.rewards.forEach((reward, index) => {
+        const rewards = data || CONFIG.rewards;
+        console.log(`📦 Processing ${rewards.length} rewards`);
+
+        rewards.forEach((reward, index) => {
+            console.log(`  → Reward ${index + 1}:`, {
+                title: reward.reward_title,
+                image: reward.image_url,
+                score: `${reward.min_score}-${reward.max_score}`
+            });
+
             const card = document.createElement('div');
-            card.className = 'reward-preview-card';
+            card.className = 'reward-card-compact';
+            
+            // ONLY show product image and name (no score, no description)
+            const imageHTML = reward.image_url 
+                ? `<img src="${reward.image_url}" alt="${reward.reward_title}" class="reward-image-compact" onerror="this.style.display='none'; console.error('Image failed:', '${reward.image_url}')">` 
+                : `<div class="reward-image-compact" style="display:flex;align-items:center;justify-content:center;font-size:2.5rem;">${reward.trophy_emoji}</div>`;
+            
             card.innerHTML = `
-                <div class="reward-preview-trophy">${reward.trophy}</div>
-                <div class="reward-preview-title">${reward.title}</div>
-                <div class="reward-preview-score">Score ${reward.minScore}-${reward.maxScore} out of 10</div>
-                <div class="reward-preview-desc">${reward.description}</div>
+                ${imageHTML}
+                <div class="reward-name-compact">${reward.reward_title}</div>
             `;
+
             carousel.appendChild(card);
+
+            // Animation
+            gsap.fromTo(card,
+                { opacity: 0, scale: 0.8 },
+                { opacity: 1, scale: 1, duration: 0.4, delay: index * 0.08, ease: 'back.out(1.7)' }
+            );
         });
+
+        console.log('✅ Rewards preview loaded successfully!');
+
+    } catch (err) {
+        console.error('❌ Fatal error loading rewards:', err);
+        console.error('Error details:', {
+            message: err.message,
+            stack: err.stack
+        });
+        
+        // Fallback to config rewards
+        console.log('⚠️ Using fallback rewards from config');
+        this.loadRewardsFromConfig();
     }
+}
+
+loadRewardsFromConfig() {
+    console.log('📦 Loading fallback rewards from CONFIG...');
+    
+    const carousel = document.getElementById('rewardsCarousel');
+    if (!carousel) {
+        console.error('❌ Carousel element not found!');
+        return;
+    }
+    
+    carousel.innerHTML = '';
+
+    CONFIG.rewards.forEach((reward, index) => {
+        console.log(`  → Config Reward ${index + 1}:`, reward.title);
+        
+        const card = document.createElement('div');
+        card.className = 'reward-card-compact';
+        card.innerHTML = `
+            <div class="reward-image-compact" style="display:flex;align-items:center;justify-content:center;font-size:2.5rem;">${reward.trophy}</div>
+            <div class="reward-name-compact">${reward.title}</div>
+        `;
+        carousel.appendChild(card);
+    });
+    
+    console.log('✅ Fallback rewards loaded');
+}
 
     async saveQuizResult(score, timeTaken, reward, answers) {
         if (!this.isValidated) {
