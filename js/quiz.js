@@ -72,16 +72,29 @@ class QuizGame {
         };
     }
 
-    bindEvents() {
-        this.buttons.start.addEventListener('click', () => this.startCountdown());
-        this.buttons.next.addEventListener('click', () => this.nextQuestion());
-        this.buttons.tryAgain.addEventListener('click', () => this.restart());
-        this.buttons.share.addEventListener('click', () => this.shareOnWhatsApp());
-        this.buttons.redeem.addEventListener('click', () => this.redeemReward());
-        this.buttons.copy.addEventListener('click', () => this.copyCoupon());
-        this.buttons.leaderboard.addEventListener('click', () => this.showLeaderboard());
-        this.buttons.back.addEventListener('click', () => this.showScreen('start'));
+   bindEvents() {
+    this.buttons.start.addEventListener('click', () => this.checkEmailAndStart());
+    this.buttons.next.addEventListener('click', () => this.nextQuestion());
+    this.buttons.tryAgain.addEventListener('click', () => this.restart());
+    this.buttons.share.addEventListener('click', () => this.shareOnWhatsApp());
+    this.buttons.redeem.addEventListener('click', () => this.redeemReward());
+    this.buttons.copy.addEventListener('click', () => this.copyCoupon());
+    this.buttons.leaderboard.addEventListener('click', () => this.showLeaderboard());
+    this.buttons.back.addEventListener('click', () => this.showScreen('start'));
+
+    // ✅ History button
+    const historyBtn = document.getElementById('historyBtn');
+    if (historyBtn) {
+        historyBtn.addEventListener('click', () => this.showHistory());
     }
+
+    // ✅ Back button from history screen
+    const backFromHistory = document.getElementById('backFromHistory');
+    if (backFromHistory) {
+        backFromHistory.addEventListener('click', () => this.showScreen('start'));
+    }
+}
+
 
     setupProgressPills() {
         for (let i = 0; i < CONFIG.quiz.totalQuestions; i++) {
@@ -91,6 +104,104 @@ class QuizGame {
             this.elements.progressPills.appendChild(pill);
         }
     }
+
+    // =====================================
+// QUIZ HISTORY
+// =====================================
+
+async showHistory() {
+    this.showScreen('history');
+    
+    this.elements.historyContainer = document.getElementById('historyContainer');
+    
+    this.elements.historyContainer.innerHTML = `
+        <div class="loader">
+            <div class="loader-spinner"></div>
+        </div>
+    `;
+    
+    const data = await supabaseHandler.getUserHistory();
+    
+    this.elements.historyContainer.innerHTML = '';
+    
+    if (data.length === 0) {
+        this.elements.historyContainer.innerHTML = `
+            <div class="history-empty">
+                <div class="history-empty-icon">📜</div>
+                <div class="history-empty-text">No quiz history yet!</div>
+                <div class="history-empty-hint">Take the quiz to see your results here.</div>
+            </div>
+        `;
+        return;
+    }
+    
+    data.forEach((entry, index) => {
+        const date = new Date(entry.created_at);
+        const formattedDate = date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        const mins = Math.floor(entry.time_taken / 60);
+        const secs = entry.time_taken % 60;
+        
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = `
+            <div class="history-header">
+                <div class="history-date">
+                    ${formattedDate}
+                    <br>
+                    <small style="opacity: 0.7;">Attempt #${entry.attempt_number}</small>
+                </div>
+                <div class="history-score">${entry.score}<span style="opacity:0.5; font-size:1rem;">/10</span></div>
+            </div>
+            <div class="history-body">
+                <div class="history-reward">
+                    ⏱️ Time: ${mins}:${secs.toString().padStart(2, '0')}
+                </div>
+                <div class="history-reward">
+                    🎁 ${entry.reward_description || 'Reward earned!'}
+                </div>
+                ${entry.reward !== 'TRYAGAIN' ? `
+                    <div class="history-coupon">
+                        <div class="history-coupon-code">${entry.reward}</div>
+                        <button class="history-copy-btn" onclick="quiz.copyCouponFromHistory('${entry.reward}')">
+                            📋 Copy
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        
+        this.elements.historyContainer.appendChild(item);
+        
+        // Stagger animation
+        gsap.fromTo(item, 
+            { opacity: 0, x: -30 },
+            { 
+                opacity: 1, 
+                x: 0, 
+                duration: 0.5,
+                delay: index * 0.05,
+                ease: 'power2.out'
+            }
+        );
+    });
+}
+
+copyCouponFromHistory(code) {
+    navigator.clipboard.writeText(code).then(() => {
+        this.showToast('✅ Coupon code copied!', 2000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        this.showToast('❌ Failed to copy code', 2000);
+    });
+}
+
 
     // =====================================
     // SCREEN MANAGEMENT
