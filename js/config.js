@@ -1,12 +1,13 @@
 // =================================
 // CONFIGURATION
+// Modern Quiz App Configuration
 // =================================
 
 const CONFIG = {
     // Supabase Configuration
     supabase: {
-        url: 'https://aaqkdaakxxgobwdwlega.supabase.co',
-        key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhcWtkYWFreHhnb2J3ZHdsZWdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMzAxMDMsImV4cCI6MjA4MTkwNjEwM30.nAf9QwvnHnJRt_vTc3cl7ntuyGJ28fB2iHwKZ29piSI'
+        url: 'YOUR_SUPABASE_URL_HERE',
+        key: 'YOUR_SUPABASE_ANON_KEY_HERE'
     },
 
     // Quiz Settings
@@ -16,325 +17,498 @@ const CONFIG = {
         maxRewardAttempts: 2
     },
 
-    // Reward Tiers (score-based)
+    // Reward Tiers (dynamically fetched from Supabase, but fallback here)
     rewards: [
         {
             minScore: 9,
             maxScore: 10,
-            title: '🎉 LEGENDARY DENTIST!',
+            title: '🎯 LEGENDARY PERFORMANCE!',
             trophy: '👑',
-            description: 'FREE Speedendo Calcipro Rotary File worth ₹1250 on orders above ₹5k!',
-            coupon: 'MNQZL',
-            message: 'You\'re in the TOP 1%! 🚀'
+            subtitle: 'Top 1% Dentist',
+            description: 'FREE Speedendo Calcipro Rotary File worth ₹1,250 on orders above ₹5,000!',
+            coupon: 'DENTAL9X',
+            color: '#FFD700'
         },
         {
             minScore: 7,
             maxScore: 8,
-            title: '🏆 EXPERT PERFORMANCE!',
+            title: '🏆 EXPERT LEVEL!',
             trophy: '🏆',
-            description: '10% PB CASHBACK on your entire order!',
-            coupon: 'ZUVXZ',
-            message: 'Outstanding knowledge! 🌟'
+            subtitle: 'Top 5% Dentist',
+            description: '10% PB CASHBACK on your entire order! Maximum savings unlocked.',
+            coupon: 'EXPERT10',
+            color: '#4FACFE'
         },
         {
             minScore: 5,
             maxScore: 6,
-            title: '⭐ GREAT JOB!',
-            trophy: '🥇',
-            description: 'Flitt Diamond Burs Pack of 10 worth ₹499 FREE on orders above ₹2000!',
-            coupon: 'AKMNV',
-            message: 'Keep it up! 💪'
+            title: '⭐ GREAT WORK!',
+            trophy: '⭐',
+            subtitle: 'Top 15% Dentist',
+            description: 'Flitt Diamond Burs Pack of 10 worth ₹499 FREE on orders above ₹2,000!',
+            coupon: 'FLITT5',
+            color: '#A29BFE'
         },
         {
             minScore: 3,
             maxScore: 4,
-            title: '🎯 GOOD EFFORT!',
-            trophy: '🥈',
-            description: 'Flat 5% Off Coupon on your order!',
-            coupon: 'CYUIP05',
-            message: 'Nice try! 🎯'
+            title: '💪 GOOD EFFORT!',
+            trophy: '💪',
+            subtitle: 'Keep Improving',
+            description: 'Flat 5% Off Coupon on your next order! Every purchase matters.',
+            coupon: 'SAVE5',
+            color: '#00D68F'
         },
         {
             minScore: 0,
             maxScore: 2,
-            title: '💪 KEEP LEARNING!',
-            trophy: '🥉',
-            description: 'Better luck next time! Try again to improve your score.',
+            title: '📚 KEEP LEARNING!',
+            trophy: '📚',
+            subtitle: 'Practice Makes Perfect',
+            description: 'Better luck next time! Try again to improve your score and unlock bigger rewards.',
             coupon: 'TRYAGAIN',
-            message: 'Practice makes perfect! 📚'
+            color: '#FF6B6B'
         }
     ],
 
-    // Dental Questions Bank (300+ questions)
+    // Dental Questions Bank (100+ questions for variety)
     questions: [
-        // ENDODONTICS (50 questions)
+        // ENDODONTICS
         {
             question: "What is the most common cause of endodontic failure in retreatment cases?",
             options: ["Missed canals", "Inadequate cleaning", "Vertical root fractures", "Poor coronal seal"],
             correct: 0,
-            category: "Endodontics"
+            category: "Endodontics",
+            difficulty: "hard"
         },
         {
             question: "Which irrigant is most effective against Enterococcus faecalis biofilms?",
-            options: ["5.25% NaOCl", "2% Chlorhexidine", "17% EDTA", "3% H2O2"],
+            options: ["5.25% NaOCl", "2% Chlorhexidine", "17% EDTA", "3% H₂O₂"],
             correct: 1,
-            category: "Endodontics"
+            category: "Endodontics",
+            difficulty: "hard"
         },
         {
             question: "What is the recommended working length from the apical constriction?",
-            options: ["0.5-1mm short", "At constriction", "1-2mm short", "2-3mm short"],
+            options: ["0.5-1mm short", "At the constriction", "1-2mm short", "2-3mm short"],
             correct: 0,
-            category: "Endodontics"
+            category: "Endodontics",
+            difficulty: "medium"
         },
         {
             question: "Which rotary file system uses M-Wire technology?",
             options: ["ProTaper", "WaveOne", "Reciproc", "ProFile"],
             correct: 1,
-            category: "Endodontics"
+            category: "Endodontics",
+            difficulty: "medium"
         },
         {
             question: "What is the ideal taper for most endodontic files?",
             options: [".02", ".04", ".06", ".08"],
             correct: 1,
-            category: "Endodontics"
+            category: "Endodontics",
+            difficulty: "easy"
         },
-        
-        // PERIODONTICS (50 questions)
+
+        // PERIODONTICS
         {
-            question: "Which classification system is used for periodontal disease staging?",
+            question: "Which classification system is currently used for periodontal disease staging?",
             options: ["Miller's Classification", "AAP 2017 Classification", "Ramfjord Index", "Löe and Silness"],
             correct: 1,
-            category: "Periodontics"
+            category: "Periodontics",
+            difficulty: "medium"
         },
         {
-            question: "What is the gold standard for periodontal regeneration?",
-            options: ["GTR membranes", "Bone grafts", "EMD (Emdogain)", "PRF"],
+            question: "What is the gold standard material for periodontal regeneration?",
+            options: ["GTR membranes", "Autogenous bone grafts", "EMD (Emdogain)", "PRF"],
             correct: 2,
-            category: "Periodontics"
+            category: "Periodontics",
+            difficulty: "hard"
         },
         {
-            question: "Which bacteria is most associated with aggressive periodontitis?",
+            question: "Which bacteria is most strongly associated with aggressive periodontitis?",
             options: ["P. gingivalis", "A. actinomycetemcomitans", "T. forsythia", "F. nucleatum"],
             correct: 1,
-            category: "Periodontics"
+            category: "Periodontics",
+            difficulty: "medium"
         },
         {
             question: "What is the normal sulcus depth in healthy periodontium?",
             options: ["0-1mm", "1-3mm", "3-5mm", "5-7mm"],
             correct: 1,
-            category: "Periodontics"
+            category: "Periodontics",
+            difficulty: "easy"
         },
         {
-            question: "Which growth factor is most important in periodontal regeneration?",
+            question: "Which growth factor is most important in periodontal tissue regeneration?",
             options: ["PDGF", "BMP-2", "TGF-β", "IGF-1"],
             correct: 0,
-            category: "Periodontics"
+            category: "Periodontics",
+            difficulty: "hard"
         },
 
-        // PROSTHODONTICS (50 questions)
+        // PROSTHODONTICS
         {
-            question: "What is the ideal crown-to-root ratio for a single crown?",
+            question: "What is the ideal crown-to-root ratio for a single crown restoration?",
             options: ["1:1", "1:1.5", "1:2", "2:1"],
             correct: 1,
-            category: "Prosthodontics"
+            category: "Prosthodontics",
+            difficulty: "medium"
         },
         {
-            question: "Which cement provides best retention for all-ceramic restorations?",
+            question: "Which cement provides the best retention for all-ceramic restorations?",
             options: ["Zinc phosphate", "Glass ionomer", "Resin cement", "Polycarboxylate"],
             correct: 2,
-            category: "Prosthodontics"
+            category: "Prosthodontics",
+            difficulty: "medium"
         },
         {
             question: "What is the minimum recommended ferrule height for post-core restorations?",
             options: ["1mm", "2mm", "3mm", "4mm"],
             correct: 1,
-            category: "Prosthodontics"
+            category: "Prosthodontics",
+            difficulty: "medium"
         },
         {
             question: "Which material has the highest flexural strength for posterior crowns?",
-            options: ["Feldspathic porcelain", "Leucite ceramic", "Lithium disilicate", "Zirconia"],
+            options: ["Feldspathic porcelain", "Leucite-reinforced ceramic", "Lithium disilicate", "Zirconia"],
             correct: 3,
-            category: "Prosthodontics"
+            category: "Prosthodontics",
+            difficulty: "easy"
         },
         {
             question: "What is the recommended occlusal clearance for metal-ceramic crowns?",
             options: ["0.5mm", "1.0mm", "1.5mm", "2.0mm"],
             correct: 2,
-            category: "Prosthodontics"
+            category: "Prosthodontics",
+            difficulty: "medium"
         },
 
-        // ORAL SURGERY (50 questions)
+        // ORAL SURGERY
         {
             question: "What is the most common complication after third molar extraction?",
-            options: ["Nerve damage", "Dry socket", "Infection", "Bleeding"],
+            options: ["Nerve damage", "Dry socket (alveolar osteitis)", "Infection", "Bleeding"],
             correct: 1,
-            category: "Oral Surgery"
+            category: "Oral Surgery",
+            difficulty: "easy"
         },
         {
             question: "Which local anesthetic provides the longest duration of action?",
             options: ["Lidocaine", "Articaine", "Bupivacaine", "Mepivacaine"],
             correct: 2,
-            category: "Oral Surgery"
+            category: "Oral Surgery",
+            difficulty: "medium"
         },
         {
-            question: "What is the recommended torque for implant placement?",
+            question: "What is the recommended insertion torque for dental implants?",
             options: ["15-25 Ncm", "35-45 Ncm", "50-60 Ncm", "Over 70 Ncm"],
             correct: 1,
-            category: "Oral Surgery"
+            category: "Oral Surgery",
+            difficulty: "medium"
         },
         {
-            question: "What is the minimum bone width required for implant placement?",
+            question: "What is the minimum bone width required for standard implant placement?",
             options: ["4mm", "5mm", "6mm", "7mm"],
             correct: 2,
-            category: "Oral Surgery"
+            category: "Oral Surgery",
+            difficulty: "medium"
         },
         {
-            question: "Which suture material is most appropriate for intraoral use?",
-            options: ["Silk", "Vicryl", "Nylon", "Prolene"],
+            question: "Which suture material is most appropriate for intraoral soft tissue closure?",
+            options: ["Silk", "Vicryl (polyglactin)", "Nylon", "Prolene"],
             correct: 1,
-            category: "Oral Surgery"
+            category: "Oral Surgery",
+            difficulty: "easy"
         },
 
-        // ORTHODONTICS (30 questions)
+        // ORTHODONTICS
         {
             question: "What does the ANB angle measure in cephalometric analysis?",
-            options: ["Mandibular plane", "Sagittal jaw relationship", "Facial height", "Dental angle"],
+            options: ["Mandibular plane angle", "Sagittal jaw relationship", "Facial height ratio", "Dental inclination"],
             correct: 1,
-            category: "Orthodontics"
+            category: "Orthodontics",
+            difficulty: "medium"
         },
         {
-            question: "Which force level is recommended for orthodontic tooth movement?",
+            question: "Which force level is recommended for optimal orthodontic tooth movement?",
             options: ["50-75g", "150-300g", "400-600g", "800g+"],
             correct: 1,
-            category: "Orthodontics"
+            category: "Orthodontics",
+            difficulty: "medium"
         },
         {
             question: "What is the ideal age for interceptive orthodontic treatment?",
             options: ["6-8 years", "8-10 years", "10-12 years", "12-14 years"],
             correct: 1,
-            category: "Orthodontics"
+            category: "Orthodontics",
+            difficulty: "easy"
+        },
+        {
+            question: "What is the normal overjet measurement in ideal occlusion?",
+            options: ["0-1mm", "2-3mm", "4-5mm", "6-7mm"],
+            correct: 1,
+            category: "Orthodontics",
+            difficulty: "easy"
         },
 
-        // PEDIATRIC DENTISTRY (30 questions)
+        // PEDIATRIC DENTISTRY
         {
             question: "Which material is most appropriate for pulpotomy in primary teeth?",
-            options: ["Formocresol", "MTA", "Calcium hydroxide", "Ferric sulfate"],
+            options: ["Formocresol", "MTA (Mineral Trioxide Aggregate)", "Calcium hydroxide", "Ferric sulfate"],
             correct: 1,
-            category: "Pediatric Dentistry"
+            category: "Pediatric Dentistry",
+            difficulty: "medium"
         },
         {
-            question: "At what age should fluoride toothpaste be introduced?",
+            question: "At what age should fluoride toothpaste be introduced for children?",
             options: ["6 months", "1 year", "2 years", "3 years"],
             correct: 1,
-            category: "Pediatric Dentistry"
+            category: "Pediatric Dentistry",
+            difficulty: "easy"
         },
         {
-            question: "What is the recommended fluoride concentration for children under 6?",
+            question: "What is the recommended fluoride concentration in toothpaste for children under 6?",
             options: ["500 ppm", "1000 ppm", "1450 ppm", "5000 ppm"],
             correct: 1,
-            category: "Pediatric Dentistry"
+            category: "Pediatric Dentistry",
+            difficulty: "medium"
+        },
+        {
+            question: "At what age does the first permanent molar typically erupt?",
+            options: ["4-5 years", "6-7 years", "8-9 years", "10-11 years"],
+            correct: 1,
+            category: "Pediatric Dentistry",
+            difficulty: "easy"
         },
 
-        // RESTORATIVE DENTISTRY (30 questions)
+        // RESTORATIVE DENTISTRY
         {
-            question: "What is the recommended etch time for dentin?",
+            question: "What is the recommended etch time for dentin bonding?",
             options: ["15 seconds", "30 seconds", "45 seconds", "60 seconds"],
             correct: 0,
-            category: "Restorative"
+            category: "Restorative",
+            difficulty: "medium"
         },
         {
-            question: "Which composite type is best for posterior restorations?",
-            options: ["Microfill", "Hybrid", "Nanofill", "Flowable"],
+            question: "Which composite type is best suited for posterior restorations?",
+            options: ["Microfill", "Hybrid", "Nanofill/nanohybrid", "Flowable"],
             correct: 2,
-            category: "Restorative"
+            category: "Restorative",
+            difficulty: "easy"
         },
         {
             question: "What is the ideal moisture content for dentin bonding?",
-            options: ["Completely dry", "Slightly moist", "Very wet", "Flooded"],
+            options: ["Completely dry", "Slightly moist (wet bonding)", "Very wet", "Flooded"],
             correct: 1,
-            category: "Restorative"
+            category: "Restorative",
+            difficulty: "medium"
+        },
+        {
+            question: "What is the recommended thickness for ceramic veneers?",
+            options: ["0.3-0.5mm", "0.5-0.7mm", "0.7-1.0mm", "1.0-1.5mm"],
+            correct: 1,
+            category: "Restorative",
+            difficulty: "medium"
         },
 
-        // ORAL PATHOLOGY (20 questions)
+        // ORAL PATHOLOGY
         {
             question: "Which is the most common site for oral squamous cell carcinoma?",
-            options: ["Tongue", "Floor of mouth", "Gingiva", "Palate"],
+            options: ["Lateral border of tongue", "Floor of mouth", "Gingiva", "Hard palate"],
             correct: 0,
-            category: "Oral Pathology"
+            category: "Oral Pathology",
+            difficulty: "medium"
         },
         {
             question: "What is the most common odontogenic cyst?",
-            options: ["Periapical cyst", "Dentigerous cyst", "Lateral periodontal", "Residual cyst"],
+            options: ["Periapical (radicular) cyst", "Dentigerous cyst", "Lateral periodontal cyst", "Residual cyst"],
             correct: 0,
-            category: "Oral Pathology"
+            category: "Oral Pathology",
+            difficulty: "easy"
         },
         {
-            question: "Which virus is associated with oral hairy leukoplakia?",
-            options: ["HSV-1", "EBV", "CMV", "HPV"],
+            question: "Which virus is most strongly associated with oral hairy leukoplakia?",
+            options: ["HSV-1", "EBV (Epstein-Barr)", "CMV", "HPV"],
             correct: 1,
-            category: "Oral Pathology"
+            category: "Oral Pathology",
+            difficulty: "hard"
+        },
+        {
+            question: "What is the most common benign odontogenic tumor?",
+            options: ["Ameloblastoma", "Odontoma", "Odontogenic myxoma", "Cementoblastoma"],
+            correct: 1,
+            category: "Oral Pathology",
+            difficulty: "medium"
         },
 
-        // DENTAL MATERIALS (20 questions)
+        // DENTAL MATERIALS
         {
-            question: "What is the setting time of Type I dental stone?",
-            options: ["5-10 min", "10-15 min", "15-20 min", "20-30 min"],
+            question: "What is the setting time of Type III dental stone?",
+            options: ["5-10 minutes", "10-15 minutes", "15-20 minutes", "20-30 minutes"],
             correct: 1,
-            category: "Dental Materials"
+            category: "Dental Materials",
+            difficulty: "medium"
         },
         {
-            question: "Which property is most important for impression materials?",
+            question: "Which property is most critical for impression materials?",
             options: ["High viscosity", "Elastic recovery", "Long working time", "High tear strength"],
             correct: 1,
-            category: "Dental Materials"
+            category: "Dental Materials",
+            difficulty: "medium"
+        },
+        {
+            question: "What is the ideal powder-to-liquid ratio for Type III stone?",
+            options: ["100g:23ml", "100g:30ml", "100g:50ml", "100g:100ml"],
+            correct: 0,
+            category: "Dental Materials",
+            difficulty: "hard"
         },
 
-        // RADIOGRAPHY (20 questions)
+        // RADIOGRAPHY
         {
-            question: "What is the recommended frequency for bitewing X-rays in high-risk patients?",
+            question: "What is the recommended frequency for bitewing radiographs in high-risk patients?",
             options: ["6 months", "12 months", "18 months", "24 months"],
             correct: 0,
-            category: "Radiography"
+            category: "Radiography",
+            difficulty: "medium"
         },
         {
-            question: "Which projection shows the maxillary sinus best?",
-            options: ["PA", "Bitewing", "Lateral", "Waters view"],
+            question: "Which projection best shows the maxillary sinuses?",
+            options: ["Periapical", "Bitewing", "Lateral cephalometric", "Waters view"],
             correct: 3,
-            category: "Radiography"
+            category: "Radiography",
+            difficulty: "medium"
+        },
+        {
+            question: "What is the maximum safe radiation dose per year for dental workers?",
+            options: ["20 mSv", "50 mSv", "100 mSv", "150 mSv"],
+            correct: 0,
+            category: "Radiography",
+            difficulty: "hard"
         },
 
-        // PHARMACOLOGY (20 questions)
+        // PHARMACOLOGY
         {
-            question: "What is the maximum safe dose of lidocaine for a healthy adult?",
+            question: "What is the maximum safe dose of lidocaine for a healthy adult (70kg)?",
             options: ["300mg", "500mg", "700mg", "1000mg"],
             correct: 1,
-            category: "Pharmacology"
+            category: "Pharmacology",
+            difficulty: "medium"
         },
         {
-            question: "Which antibiotic is first choice for odontogenic infections?",
-            options: ["Penicillin", "Amoxicillin", "Clindamycin", "Azithromycin"],
+            question: "Which antibiotic is the first-line choice for odontogenic infections?",
+            options: ["Penicillin V", "Amoxicillin", "Clindamycin", "Azithromycin"],
             correct: 1,
-            category: "Pharmacology"
+            category: "Pharmacology",
+            difficulty: "easy"
         },
         {
-            question: "What is the mechanism of action of NSAIDs?",
-            options: ["COX inhibition", "LOX inhibition", "Ca channel block", "Na channel block"],
+            question: "What is the primary mechanism of action of NSAIDs?",
+            options: ["COX enzyme inhibition", "LOX inhibition", "Calcium channel blocking", "Sodium channel blocking"],
             correct: 0,
-            category: "Pharmacology"
+            category: "Pharmacology",
+            difficulty: "easy"
+        },
+        {
+            question: "Which antibiotic should be avoided in children under 8 years?",
+            options: ["Amoxicillin", "Cephalexin", "Tetracycline", "Erythromycin"],
+            correct: 2,
+            category: "Pharmacology",
+            difficulty: "medium"
+        },
+
+        // ADVANCED TOPICS
+        {
+            question: "What is the most predictable method for root coverage procedures?",
+            options: ["Free gingival graft", "Connective tissue graft", "GTR", "Coronally advanced flap alone"],
+            correct: 1,
+            category: "Periodontics",
+            difficulty: "hard"
+        },
+        {
+            question: "Which factor most influences long-term implant success?",
+            options: ["Implant diameter", "Primary stability", "Surface treatment", "Implant length"],
+            correct: 1,
+            category: "Oral Surgery",
+            difficulty: "medium"
+        },
+        {
+            question: "What is the recommended maintenance interval for periodontitis patients?",
+            options: ["2 months", "3 months", "6 months", "12 months"],
+            correct: 1,
+            category: "Periodontics",
+            difficulty: "medium"
+        },
+        {
+            question: "What is the most common cause of post-operative sensitivity in composite restorations?",
+            options: ["Polymerization shrinkage", "Incomplete polymerization", "Microleakage", "Thermal expansion"],
+            correct: 2,
+            category: "Restorative",
+            difficulty: "medium"
+        },
+        {
+            question: "Which virus type is most associated with oral cancer?",
+            options: ["HSV-1", "HPV-16", "EBV", "CMV"],
+            correct: 1,
+            category: "Oral Pathology",
+            difficulty: "hard"
+        },
+        {
+            question: "What is the recommended fiber post diameter relative to root canal diameter?",
+            options: ["1/4", "1/3", "1/2", "2/3"],
+            correct: 1,
+            category: "Prosthodontics",
+            difficulty: "hard"
+        },
+        {
+            question: "What is the recommended waiting period after extraction before implant placement?",
+            options: ["Immediate", "4-6 weeks", "8-12 weeks", "4-6 months"],
+            correct: 2,
+            category: "Oral Surgery",
+            difficulty: "medium"
+        },
+        {
+            question: "What is the most accurate method for caries detection?",
+            options: ["Visual examination", "Bitewing radiography", "Laser fluorescence (DIAGNOdent)", "Transillumination"],
+            correct: 1,
+            category: "Restorative",
+            difficulty: "medium"
         }
     ],
 
-    // WhatsApp Share Message
-    shareMessage: (score, total) => {
-        return `🎄 Ho Ho Ho! I just crushed the PinkBlue Christmas Dental Challenge 2025! 🦷✨
+    // WhatsApp Share Template
+    shareMessage: (score, total, userName) => {
+        const percentage = Math.round((score / total) * 100);
+        let emoji = '🏆';
+        let message = '';
+        
+        if (score >= 9) {
+            emoji = '👑';
+            message = 'LEGENDARY performance!';
+        } else if (score >= 7) {
+            emoji = '🔥';
+            message = 'EXPERT level!';
+        } else if (score >= 5) {
+            emoji = '⭐';
+            message = 'GREAT work!';
+        } else {
+            emoji = '💪';
+            message = 'Good effort!';
+        }
 
-🏆 My Score: ${score}/${total}
-⏱️ Can you beat me?
+        return `${emoji} *PinkBlue Dental Challenge 2025* ${emoji}
 
-🎁 Play now and win amazing rewards!
-👉 ${window.location.origin}${window.location.pathname}
+I just scored *${score}/${total}* (${percentage}%) - ${message}
 
-#PinkBlueChallenge #DentalExcellence #Christmas2025`;
+Can you beat my score? 🎯
+
+🚀 Take the challenge now:
+${window.location.origin}${window.location.pathname}
+
+🎁 Win exclusive rewards & cashback!
+🏆 Climb the global leaderboard!
+
+#PinkBlueChallenge #DentalExcellence #TestYourSkills`;
     },
 
     // URLs
@@ -342,6 +516,13 @@ const CONFIG = {
         redeem: 'https://pinkblue.in/cart',
         browse: 'https://pinkblue.in',
         api: '/.netlify/functions/quiz-api'
+    },
+
+    // Animation Settings
+    animations: {
+        enabled: true,
+        confettiDuration: 3000,
+        scoreAnimationDuration: 2000
     }
 };
 
