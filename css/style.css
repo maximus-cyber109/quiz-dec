@@ -120,17 +120,27 @@ body {
 .nav-stats {
     display: flex;
     gap: var(--spacing-sm);
+    align-items: center;
 }
 
-.stat-pill {
+.attempts-badge {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 6px 12px;
-    border-radius: var(--radius-full);
-    font-size: 0.9rem;
-    font-weight: 600;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.attempts-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.attempts-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
 }
 
 /* === SCREENS === */
@@ -342,35 +352,35 @@ body {
     font-size: 1.2rem;
 }
 
-/* === TIMER === */
+/* === TIMER COMPACT === */
 .timer-card {
     background: rgba(255, 107, 107, 0.1);
     border: 2px solid rgba(255, 107, 107, 0.3);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
     text-align: center;
 }
 
 .timer-label {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 4px;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
 .timer-display {
     font-family: 'Space Grotesk', monospace;
-    font-size: 3rem;
+    font-size: 2rem;
     font-weight: 700;
     color: #FF6B6B;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 8px;
 }
 
 .timer-progress {
     width: 100%;
-    height: 8px;
+    height: 6px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-full);
     overflow: hidden;
@@ -521,90 +531,51 @@ body {
     background: var(--error);
 }
 
-/* === RESULTS === */
+/* === RESULTS - COMPACT NO CROWN === */
 .trophy-container {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    margin: var(--spacing-xl) auto;
-}
-
-.trophy-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 150px;
-    height: 150px;
-    background: radial-gradient(circle, rgba(0, 242, 254, 0.4) 0%, transparent 70%);
-    transform: translate(-50%, -50%);
-    animation: glowPulse 2s ease-in-out infinite;
-}
-
-@keyframes glowPulse {
-    0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-    50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
-}
-
-.trophy-emoji {
-    font-size: 6rem;
-    text-align: center;
+    display: none !important;
 }
 
 .score-circle-wrapper {
     position: relative;
-    width: 200px;
-    height: 200px;
-    margin: var(--spacing-xl) auto;
+    width: 100%;
+    max-width: 280px;
+    margin: var(--spacing-lg) auto;
 }
 
 .score-circle {
-    width: 100%;
-    height: 100%;
-    transform: rotate(-90deg);
-}
-
-.score-bg {
-    fill: none;
-    stroke: rgba(255, 255, 255, 0.1);
-    stroke-width: 12;
-}
-
-.score-fill {
-    fill: none;
-    stroke: url(#scoreGradient);
-    stroke-width: 12;
-    stroke-linecap: round;
-    stroke-dasharray: 565;
-    stroke-dashoffset: 565;
+    display: none;
 }
 
 .score-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: static;
+    transform: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(0, 242, 254, 0.3);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
     text-align: center;
 }
 
 .score-value {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 3.5rem;
+    font-size: 4rem;
     font-weight: 700;
     background: var(--gradient-blue);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     line-height: 1;
+    margin-bottom: var(--spacing-sm);
 }
 
 .score-label {
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: var(--text-secondary);
-    margin-top: var(--spacing-sm);
 }
 
 .results-title {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
     text-align: center;
     margin-bottom: var(--spacing-sm);
@@ -613,7 +584,36 @@ body {
 .results-subtitle {
     text-align: center;
     color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: var(--spacing-lg);
+}
+
+/* === NO REWARDS MESSAGE === */
+.no-rewards-message {
+    background: rgba(255, 167, 38, 0.1);
+    border: 2px solid rgba(255, 167, 38, 0.3);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    text-align: center;
     margin-bottom: var(--spacing-xl);
+}
+
+.no-rewards-icon {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.no-rewards-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-sm);
+    color: #FFA726;
+}
+
+.no-rewards-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
 }
 
 /* === REWARD === */
@@ -1043,6 +1043,7 @@ body {
 /* === RESPONSIVE === */
 @media (max-width: 480px) {
     .hero-title-compact { font-size: 1.75rem; }
-    .timer-display { font-size: 2.5rem; }
+    .timer-display { font-size: 1.75rem; }
     .reward-card-compact { min-width: 140px; max-width: 140px; }
+    .score-value { font-size: 3.5rem; }
 }
