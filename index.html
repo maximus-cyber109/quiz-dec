@@ -1,25 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PinkBlue Quizmas 2025</title>
-
-  <link rel="stylesheet" href="css/style.css" />
-
-  <!-- GSAP, confetti, Supabase, etc. -->
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- Background -->
+  <!-- Backgrounds -->
   <div class="gradient-bg"></div>
   <div class="mesh-gradient"></div>
 
-  <!-- Loading overlay -->
+  <!-- LOADING OVERLAY (shows first) -->
   <div id="loadingOverlay" class="screen-loading">
-    Loading quiz…
+    <div class="loader-dots">
+      <span></span><span></span><span></span>
+    </div>
+    <span>Initializing quiz…</span>
   </div>
 
   <div class="app-wrapper">
@@ -51,9 +49,7 @@
         <!-- Rewards preview -->
         <section class="rewards-preview-compact">
           <h2 class="section-title-compact">Rewards you can win</h2>
-          <div id="rewardsCarousel" class="rewards-carousel-compact">
-            <!-- Supabase / fallback rewards injected here -->
-          </div>
+          <div id="rewardsCarousel" class="rewards-carousel-compact"></div>
         </section>
 
         <!-- Buttons -->
@@ -74,22 +70,21 @@
     <!-- QUIZ SCREEN -->
     <main id="quizScreen" class="screen">
       <div class="screen-content">
-        <!-- Practice mode message when no rewards left -->
         <div id="noRewardsMessage" class="no-rewards-message" style="display:none;">
           <div class="no-rewards-icon">📚</div>
           <div class="no-rewards-title">Practice mode</div>
           <div class="no-rewards-text">
-            You have used all reward attempts, but you can keep playing to sharpen your skills.
+            No more reward attempts left, but keep playing to improve!
           </div>
         </div>
 
-        <!-- Progress pills -->
+        <!-- Progress -->
         <div class="progress-pills">
           <div id="progressText" class="progress-text">Question 1 of 10</div>
           <div id="progressPills" class="pill-container"></div>
         </div>
 
-        <!-- Inline timer row (timer on the right) -->
+        <!-- Question header: number + inline timer -->
         <div class="question-header-row">
           <div class="question-number">
             <span id="qNumber">01</span>
@@ -99,17 +94,15 @@
           <div id="inlineTimer">Time: 2:00</div>
         </div>
 
-        <!-- Question card -->
+        <!-- Question -->
         <div class="question-card">
-          <div id="questionText" class="question-text">
-            Loading question…
-          </div>
+          <div id="questionText" class="question-text">Loading question…</div>
         </div>
 
         <!-- Options -->
         <div id="optionsList" class="options-list"></div>
 
-        <!-- Next -->
+        <!-- Next button -->
         <button id="nextBtn" class="btn btn-primary btn-large btn-disabled" disabled>
           <span class="btn-text">Next Question</span>
         </button>
@@ -120,9 +113,7 @@
     <main id="resultsScreen" class="screen">
       <div class="screen-content">
         <h2 id="resultsTitle" class="results-title">Quiz complete!</h2>
-        <p id="resultsSubtitle" class="results-subtitle">
-          Your performance summary.
-        </p>
+        <p id="resultsSubtitle" class="results-subtitle">Your performance summary.</p>
 
         <div class="score-circle-wrapper">
           <div class="score-content">
@@ -131,17 +122,15 @@
           </div>
         </div>
 
-        <!-- No-rewards message here as well (when attempts exhausted) -->
+        <!-- No rewards message -->
         <div id="noRewardsMessageResults" class="no-rewards-message" style="display:none;">
           <div class="no-rewards-icon">📚</div>
           <div class="no-rewards-title">Practice mode</div>
-          <div class="no-rewards-text">
-            You’ve used all reward attempts. Keep playing for fun and learning.
-          </div>
+          <div class="no-rewards-text">You've used all reward attempts.</div>
         </div>
 
-        <!-- Reward card (hidden if no attempts left) -->
-        <section id="rewardCard" class="reward-card">
+        <!-- Reward card -->
+        <section id="rewardCard" class="reward-card" style="display:none;">
           <div class="reward-badge">🎁</div>
           <h3 id="rewardTitle" class="reward-title">Your reward</h3>
           <p id="rewardDesc" class="reward-desc"></p>
@@ -155,9 +144,9 @@
         </section>
 
         <div class="button-stack">
-          <button id="redeemBtn" class="btn btn-primary btn-large">
+          <a href="https://pinkblue.in/cart" class="btn btn-primary btn-large" target="_blank">
             <span class="btn-text">Redeem on PinkBlue</span>
-          </button>
+          </a>
           <button id="shareBtn" class="btn btn-whatsapp btn-small">
             <span class="btn-text">Share on WhatsApp</span>
           </button>
@@ -168,13 +157,11 @@
       </div>
     </main>
 
-    <!-- LEADERBOARD SCREEN -->
+    <!-- LEADERBOARD -->
     <main id="leaderboardScreen" class="screen">
       <div class="screen-content">
         <div class="screen-header">
-          <button id="backBtn" class="back-btn">
-            ←
-          </button>
+          <button id="backBtn" class="back-btn">←</button>
           <h2 class="screen-title">Leaderboard</h2>
           <div class="header-spacer"></div>
         </div>
@@ -182,13 +169,11 @@
       </div>
     </main>
 
-    <!-- HISTORY SCREEN -->
+    <!-- HISTORY -->
     <main id="historyScreen" class="screen">
       <div class="screen-content">
         <div class="screen-header">
-          <button id="backFromHistory" class="back-btn">
-            ←
-          </button>
+          <button id="backFromHistory" class="back-btn">←</button>
           <h2 class="screen-title">My Attempts</h2>
           <div class="header-spacer"></div>
         </div>
@@ -196,14 +181,15 @@
       </div>
     </main>
 
-    <!-- Rules modal -->
+    <!-- RULES MODAL -->
     <div id="rulesModal" class="modal">
       <div class="modal-content">
         <h3>Quiz Rules</h3>
         <ul>
-          <li>10 questions, 2 minutes.</li>
-          <li>Higher score = better reward.</li>
-          <li>Maximum 2 reward attempts per user.</li>
+          <li>10 advanced dental questions</li>
+          <li>2 minutes total time</li>
+          <li>Higher score = better reward</li>
+          <li>Maximum 2 reward attempts</li>
         </ul>
         <button id="rulesOkayBtn" class="btn btn-primary btn-small">
           Got it, start
@@ -211,10 +197,13 @@
       </div>
     </div>
 
-    <!-- Email modal -->
+    <!-- EMAIL MODAL -->
     <div id="emailModal" class="modal">
       <div class="modal-content">
         <h3>Enter your email</h3>
+        <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:16px;">
+          To track your rewards and attempts.
+        </p>
         <input type="email" id="emailInput" placeholder="you@example.com" />
         <button id="emailSubmitBtn" class="btn btn-primary btn-small">
           Continue
@@ -222,21 +211,24 @@
       </div>
     </div>
 
-    <!-- Countdown overlay -->
+    <!-- COUNTDOWN OVERLAY -->
     <div id="countdownOverlay" class="countdown-overlay">
       <div id="countdownNumber">3</div>
     </div>
 
-    <!-- Toast -->
+    <!-- TOAST -->
     <div id="toast" class="toast">
       <div id="toastIcon" class="toast-icon">✓</div>
       <div id="toastMessage" class="toast-message"></div>
     </div>
   </div>
 
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
   <script src="js/supabase.js"></script>
   <script src="js/quiz.js"></script>
-  <script src="js/main.js"></script>
 </body>
 </html>
