@@ -69,27 +69,35 @@ class QuizGame {
     if (this.buttons.start) {
       this.buttons.start.addEventListener('click', () => this.handleStartClick());
     }
+
     if (this.buttons.next) {
       this.buttons.next.addEventListener('click', () => this.nextQuestion());
     }
+
     if (this.buttons.tryAgain) {
       this.buttons.tryAgain.addEventListener('click', () => this.restart());
     }
+
     if (this.buttons.share) {
       this.buttons.share.addEventListener('click', () => this.shareOnWhatsApp());
     }
+
     if (this.buttons.copy) {
       this.buttons.copy.addEventListener('click', () => this.copyCoupon());
     }
+
     if (this.buttons.leaderboard) {
       this.buttons.leaderboard.addEventListener('click', () => this.showLeaderboard());
     }
+
     if (this.buttons.history) {
       this.buttons.history.addEventListener('click', () => this.showHistory());
     }
+
     if (this.buttons.back) {
       this.buttons.back.addEventListener('click', () => this.showScreen('start'));
     }
+
     if (this.buttons.backFromHistory) {
       this.buttons.backFromHistory.addEventListener('click', () => this.showScreen('start'));
     }
@@ -134,9 +142,10 @@ class QuizGame {
     const modal = document.getElementById('rulesModal');
     if (modal) {
       modal.classList.add('active');
+      
       if (window.gsap) {
         gsap.fromTo(modal, 
-          { opacity: 0, scale: 0.9 }, 
+          { opacity: 0, scale: 0.9 },
           { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(1.7)' }
         );
       }
@@ -145,6 +154,7 @@ class QuizGame {
 
   closeRulesAndStart() {
     const modal = document.getElementById('rulesModal');
+    
     if (window.gsap) {
       gsap.to(modal, {
         opacity: 0,
@@ -164,6 +174,7 @@ class QuizGame {
   startCountdown() {
     const overlay = document.getElementById('countdownOverlay');
     const numberEl = document.getElementById('countdownNumber');
+
     if (!overlay || !numberEl) {
       this.startQuiz();
       return;
@@ -175,6 +186,7 @@ class QuizGame {
     const interval = setInterval(() => {
       if (count === 0) {
         numberEl.textContent = 'GO!';
+        
         if (window.gsap) {
           gsap.to(numberEl, {
             scale: 1.5,
@@ -193,15 +205,18 @@ class QuizGame {
             this.startQuiz();
           }, 400);
         }
+
         clearInterval(interval);
       } else {
         numberEl.textContent = count;
+        
         if (window.gsap) {
-          gsap.fromTo(numberEl, 
-            { scale: 0, opacity: 0 }, 
+          gsap.fromTo(numberEl,
+            { scale: 0, opacity: 0 },
             { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.7)' }
           );
         }
+        
         count--;
       }
     }, 1000);
@@ -246,6 +261,7 @@ class QuizGame {
     if (this.elements.qNumber) {
       this.elements.qNumber.textContent = String(this.currentQuestion + 1).padStart(2, '0');
     }
+
     if (this.elements.questionText) {
       this.elements.questionText.textContent = question.question;
     }
@@ -267,6 +283,7 @@ class QuizGame {
     if (!container) return;
 
     container.innerHTML = '';
+
     options.forEach((option, index) => {
       const optionEl = document.createElement('div');
       optionEl.className = 'option-item';
@@ -275,11 +292,12 @@ class QuizGame {
         <div class="option-letter">${String.fromCharCode(65 + index)}</div>
         <div class="option-text">${option}</div>
       `;
+
       optionEl.addEventListener('click', () => this.selectAnswer(index));
 
       if (window.gsap) {
-        gsap.fromTo(optionEl, 
-          { opacity: 0, x: -30 }, 
+        gsap.fromTo(optionEl,
+          { opacity: 0, x: -30 },
           { opacity: 1, x: 0, duration: 0.3, delay: index * 0.06, ease: 'back.out(1.7)' }
         );
       }
@@ -297,7 +315,10 @@ class QuizGame {
       options[index].classList.add('selected');
     }
 
-    if (navigator.vibrate) navigator.vibrate(10);
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+
     this.selectedAnswer = index;
 
     if (this.buttons.next) {
@@ -308,6 +329,7 @@ class QuizGame {
 
   nextQuestion() {
     if (this.selectedAnswer === null || this.isAnswerLocked) return;
+
     this.isAnswerLocked = true;
 
     const question = this.questions[this.currentQuestion];
@@ -348,6 +370,7 @@ class QuizGame {
 
     setTimeout(() => {
       this.currentQuestion++;
+
       if (this.currentQuestion < this.questions.length) {
         this.loadQuestion();
       } else {
@@ -358,8 +381,7 @@ class QuizGame {
 
   updateProgress() {
     if (this.elements.progressText) {
-      this.elements.progressText.textContent = 
-        `Question ${this.currentQuestion + 1} of ${CONFIG.quiz.totalQuestions}`;
+      this.elements.progressText.textContent = `Question ${this.currentQuestion + 1} of ${CONFIG.quiz.totalQuestions}`;
     }
   }
 
@@ -373,9 +395,11 @@ class QuizGame {
 
   startTimer() {
     this.updateTimerDisplay();
+
     this.timer = setInterval(() => {
       this.timeLeft--;
       this.updateTimerDisplay();
+
       if (this.timeLeft <= 0) {
         this.endQuiz();
       }
@@ -385,8 +409,10 @@ class QuizGame {
   updateTimerDisplay() {
     const mins = Math.floor(this.timeLeft / 60);
     const secs = this.timeLeft % 60;
+
     if (this.elements.timer) {
       this.elements.timer.textContent = `Time: ${mins}:${secs.toString().padStart(2, '0')}`;
+
       if (this.timeLeft <= 30) {
         this.elements.timer.style.color = '#FF6B6B';
       }
@@ -409,19 +435,20 @@ class QuizGame {
     this.animateScore();
 
     const titles = {
-      10: "Perfect Score! 🎯",
-      9: "Outstanding! 💪",
-      8: "Excellent Work! 🏆",
-      7: "Great Job! ⭐",
-      6: "Well Done! 👍",
-      5: "Good Effort! 📚",
-      4: "Keep Practicing! 💡",
-      3: "Learning! 📖",
-      2: "Keep Going! 🌱",
-      1: "Nice Try! 🚀",
-      0: "Better Luck Next Time! 💪"
+      10: 'Perfect Score! 🎉',
+      9: 'Outstanding! ⭐',
+      8: 'Excellent Work! 💎',
+      7: 'Great Job! 🌟',
+      6: 'Well Done! 👏',
+      5: 'Good Effort! 💪',
+      4: 'Keep Practicing! 📚',
+      3: 'Learning! 🎯',
+      2: 'Keep Going! 🚀',
+      1: 'Nice Try! 💡',
+      0: 'Better Luck Next Time! 🍀'
     };
 
+    // Handle rewards display
     if (!hasRewardsLeft || !rewardCode || rewardCode === 'PRACTICE') {
       document.getElementById('noRewardsMessageResults').style.display = 'block';
       document.getElementById('rewardCard').style.display = 'none';
@@ -429,25 +456,24 @@ class QuizGame {
     } else {
       document.getElementById('noRewardsMessageResults').style.display = 'none';
       document.getElementById('rewardCard').style.display = 'block';
-      
       document.getElementById('rewardTitle').textContent = rewardDisplay?.title || 'Your Reward';
       document.getElementById('rewardDesc').textContent = rewardDisplay?.description || '';
       document.getElementById('couponCode').textContent = rewardCode;
-      
       document.getElementById('resultsTitle').textContent = titles[this.score] || 'Quiz Complete!';
+    }
 
-      if (window.confetti) {
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
-      }
+    if (window.confetti) {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
     }
 
     document.getElementById('resultsSubtitle').textContent = 
       `You scored ${this.score}/${CONFIG.quiz.totalQuestions} in ${Math.floor(timeTaken / 60)}:${(timeTaken % 60).toString().padStart(2, '0')}`;
 
+    // Save result
     await window.supabaseHandler?.saveQuizResult(this.score, timeTaken, rewardCode, this.answers);
   }
 
@@ -475,24 +501,27 @@ class QuizGame {
 
   async showLeaderboard() {
     this.showScreen('leaderboard');
+    
     const container = document.getElementById('leaderboardContainer');
     if (!container) return;
 
-    container.innerHTML = '<div class="loader"><div class="loader-spinner"></div></div>';
+    container.innerHTML = `<div class="loader"><div class="loader-spinner"></div></div>`;
 
     try {
       const data = await window.supabaseHandler?.getLeaderboard();
       container.innerHTML = '';
 
       if (!data || !data.length) {
-        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);">No entries yet. Be the first!</div>';
+        container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-secondary)">No entries yet. Be the first!</div>`;
         return;
       }
 
       data.forEach((entry, index) => {
         const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
-        const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
-        const name = entry.quiz_users?.name || entry.email?.split('@')[0] || 'Anonymous';
+        const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1;
+        
+        const name = entry.email?.split('@')[0] || 'Anonymous';
+        
         const mins = Math.floor(entry.time_taken / 60);
         const secs = entry.time_taken % 60;
 
@@ -504,21 +533,23 @@ class QuizGame {
             <div class="leader-name">${name}</div>
             <div class="leader-time">Time: ${mins}:${secs.toString().padStart(2, '0')}</div>
           </div>
-          <div class="leader-score">${entry.score}<span style="opacity:0.5;font-size:1rem;">/10</span></div>
+          <div class="leader-score">${entry.score}<span style="opacity:0.5;font-size:1rem">/10</span></div>
         `;
         container.appendChild(item);
       });
     } catch (err) {
-      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);">Failed to load leaderboard</div>';
+      console.error('Leaderboard error:', err);
+      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-secondary)">Failed to load leaderboard</div>`;
     }
   }
 
   async showHistory() {
     this.showScreen('history');
+    
     const container = document.getElementById('historyContainer');
     if (!container) return;
 
-    container.innerHTML = '<div class="loader"><div class="loader-spinner"></div></div>';
+    container.innerHTML = `<div class="loader"><div class="loader-spinner"></div></div>`;
 
     try {
       const data = await window.supabaseHandler?.getUserHistory();
@@ -526,19 +557,24 @@ class QuizGame {
 
       if (!data || !data.length) {
         container.innerHTML = `
-          <div style="text-align:center;padding:40px;">
-            <div style="font-size:3rem;margin-bottom:16px;">📜</div>
-            <div style="color:var(--text-secondary);">No attempts yet</div>
+          <div style="text-align:center;padding:40px">
+            <div style="font-size:3rem;margin-bottom:16px">📝</div>
+            <div style="color:var(--text-secondary)">No attempts yet</div>
           </div>
         `;
         return;
       }
 
-      data.forEach((entry) => {
-        const date = new Date(entry.created_at);
+      data.forEach((entry, index) => {
+        const date = new Date(entry.played_at);
         const formatted = date.toLocaleString('en-IN', {
-          month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
         });
+
         const mins = Math.floor(entry.time_taken / 60);
         const secs = entry.time_taken % 60;
 
@@ -546,7 +582,10 @@ class QuizGame {
         item.className = 'history-item';
         item.innerHTML = `
           <div class="history-header">
-            <div class="history-date">${formatted}<br><small style="opacity:0.7;">Attempt #${entry.attempt_number}</small></div>
+            <div class="history-date">
+              ${formatted}
+              <br><small style="opacity:0.7">Attempt ${entry.attempt_number || index + 1}</small>
+            </div>
             <div class="history-score">${entry.score}/10</div>
           </div>
           <div class="history-body">
@@ -562,7 +601,8 @@ class QuizGame {
         container.appendChild(item);
       });
     } catch (err) {
-      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);">Failed to load history</div>';
+      console.error('History error:', err);
+      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-secondary)">Failed to load history</div>`;
     }
   }
 
@@ -578,8 +618,10 @@ class QuizGame {
     if (!code) return;
 
     navigator.clipboard.writeText(code).then(() => {
-      this.showToast('Coupon code copied!', 2000);
-      if (navigator.vibrate) navigator.vibrate([10, 40, 10]);
+      this.showToast(`Coupon ${code} copied!`, 2000);
+      if (navigator.vibrate) {
+        navigator.vibrate([10, 40, 10]);
+      }
     }).catch(() => {
       this.showToast('Failed to copy', 2000);
     });
@@ -587,12 +629,35 @@ class QuizGame {
 
   copyCouponFromHistory(code) {
     navigator.clipboard.writeText(code).then(() => {
-      this.showToast('Coupon code copied!', 2000);
+      this.showToast(`Coupon ${code} copied!`, 2000);
     });
+  }
+
+  updateAttemptsUI(attemptsUsed, isValidated) {
+    const attemptsValue = document.querySelector('.attempts-value');
+    if (attemptsValue) {
+      const remaining = Math.max(0, 2 - attemptsUsed);
+      attemptsValue.textContent = remaining;
+      
+      if (remaining === 0) {
+        attemptsValue.style.color = '#FF6B6B';
+      } else if (remaining === 1) {
+        attemptsValue.style.color = '#FFA400';
+      } else {
+        attemptsValue.style.color = '#00D68F';
+      }
+    }
+  }
+
+  updateHistoryState(email, isValidated) {
+    if (this.buttons.history) {
+      this.buttons.history.style.display = isValidated && email ? 'flex' : 'none';
+    }
   }
 
   restart() {
     this.showScreen('start');
+
     if (this.elements.progressPills) {
       const pills = this.elements.progressPills.querySelectorAll('.progress-pill');
       pills.forEach(pill => {
@@ -610,10 +675,10 @@ class QuizGame {
     if (this.screens[name]) {
       this.screens[name].style.display = 'block';
       this.screens[name].classList.add('active');
-      
+
       if (window.gsap) {
-        gsap.fromTo(this.screens[name], 
-          { opacity: 0, y: 20 }, 
+        gsap.fromTo(this.screens[name],
+          { opacity: 0, y: 20 },
           { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out' }
         );
       }
@@ -629,7 +694,10 @@ class QuizGame {
       toastIcon.textContent = '✓';
       toastMessage.textContent = message;
       toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), duration);
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, duration);
     }
   }
 
