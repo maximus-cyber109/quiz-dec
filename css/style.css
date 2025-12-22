@@ -926,3 +926,179 @@ body {
     font-size: 3rem;
   }
 }
+/* ========================================
+   MOBILE/IFRAME COMPACT MODE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .screen {
+    min-height: auto;
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  /* Compact practice mode warning */
+  .no-rewards-message {
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .no-rewards-icon {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .no-rewards-title {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+
+  .no-rewards-text {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  /* Compact progress pills */
+  .progress-pills {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .progress-text {
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+  }
+
+  .progress-pill {
+    width: 20px;
+    height: 6px;
+  }
+
+  /* Compact question header */
+  .question-header-row {
+    margin: var(--spacing-sm) 0 var(--spacing-xs);
+  }
+
+  .question-number {
+    font-size: 1.2rem;
+  }
+
+  #inlineTimer {
+    font-size: 0.8rem;
+  }
+
+  /* Compact question card */
+  .question-card {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .question-text {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  /* Compact options */
+  .options-list {
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .option-item {
+    padding: var(--spacing-md);
+  }
+
+  .option-letter {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .option-text {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  /* Ensure Next button is always visible */
+  .btn-large {
+    padding: 16px 24px;
+    font-size: 1rem;
+  }
+
+  /* Add bottom padding to ensure button visibility */
+  #quizScreen .screen-content {
+    padding-bottom: var(--spacing-xl);
+  }
+}
+
+/* Extra compact for very small screens */
+@media (max-height: 700px) {
+  .top-nav {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .logo-mark {
+    font-size: 1.3rem;
+  }
+
+  .attempts-badge {
+    gap: 0;
+  }
+
+  .attempts-label {
+    font-size: 0.65rem;
+  }
+
+  .attempts-value {
+    font-size: 1rem;
+  }
+
+  .no-rewards-message {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .no-rewards-icon {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+  }
+
+  .no-rewards-title {
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+  }
+
+  .no-rewards-text {
+    font-size: 0.75rem;
+  }
+
+  .question-card {
+    padding: var(--spacing-sm);
+  }
+
+  .question-text {
+    font-size: 0.95rem;
+  }
+
+  .options-list {
+    gap: 8px;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .option-item {
+    padding: 10px 12px;
+  }
+
+  .option-letter {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+
+  .option-text {
+    font-size: 0.85rem;
+  }
+
+  .btn-large {
+    padding: 14px 20px;
+    font-size: 0.95rem;
+  }
+}
