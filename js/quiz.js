@@ -633,34 +633,48 @@ class QuizGame {
     });
   }
 
-  updateAttemptsUI(attemptsUsed, isValidated) {
-    const attemptsValue = document.querySelector('.attempts-value');
-    if (attemptsValue) {
-      const remaining = Math.max(0, 2 - attemptsUsed);
-      attemptsValue.textContent = remaining;
-      
-      if (remaining === 0) {
-        attemptsValue.style.color = '#FF6B6B';
-      } else if (remaining === 1) {
-        attemptsValue.style.color = '#FFA400';
-      } else {
-        attemptsValue.style.color = '#00D68F';
-      }
+   updateAttemptsUI(attemptsUsed, isValidated) {
+    const attemptsValue =
+      document.querySelector('.attempts-value') ||
+      document.getElementById('attemptsLeft');
+
+    if (!attemptsValue) {
+      console.warn('Attempts element not found');
+      return;
+    }
+
+    const remaining = Math.max(0, 2 - attemptsUsed);
+    attemptsValue.textContent = remaining;
+
+    if (remaining === 0) {
+      attemptsValue.style.color = '#FF6B6B';
+    } else if (remaining === 1) {
+      attemptsValue.style.color = '#FFA400';
+    } else {
+      attemptsValue.style.color = '#00D68F';
     }
   }
 
   updateHistoryState(email, isValidated) {
-    if (this.buttons.history) {
-      this.buttons.history.style.display = isValidated && email ? 'flex' : 'none';
+    const historyBtn =
+      this.buttons?.history || document.getElementById('historyBtn');
+
+    if (!historyBtn) {
+      console.warn('History button not found');
+      return;
     }
+
+    historyBtn.style.display =
+      isValidated && email ? 'inline-flex' : 'none';
   }
 
   restart() {
     this.showScreen('start');
 
     if (this.elements.progressPills) {
-      const pills = this.elements.progressPills.querySelectorAll('.progress-pill');
-      pills.forEach(pill => {
+      const pills =
+        this.elements.progressPills.querySelectorAll('.progress-pill');
+      pills.forEach((pill) => {
         pill.style.background = 'rgba(255,255,255,0.2)';
         pill.classList.remove('completed');
       });
@@ -668,7 +682,7 @@ class QuizGame {
   }
 
   showScreen(name) {
-    Object.values(this.screens).forEach(screen => {
+    Object.values(this.screens).forEach((screen) => {
       if (screen) screen.style.display = 'none';
     });
 
@@ -677,7 +691,8 @@ class QuizGame {
       this.screens[name].classList.add('active');
 
       if (window.gsap) {
-        gsap.fromTo(this.screens[name],
+        gsap.fromTo(
+          this.screens[name],
           { opacity: 0, y: 20 },
           { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out' }
         );
@@ -711,11 +726,17 @@ class QuizGame {
   }
 }
 
-// Initialize quiz when DOM is ready
+// init + resync with Supabase
 let quiz;
 document.addEventListener('DOMContentLoaded', () => {
   quiz = new QuizGame();
+
+  setTimeout(() => {
+    if (window.supabaseHandler) {
+      window.supabaseHandler.updateAttemptsDisplay();
+      window.supabaseHandler.updateHistoryButton();
+    }
+  }, 500);
 });
 
-// Expose globally for onclick handlers
 window.quiz = quiz;
