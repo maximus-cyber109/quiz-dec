@@ -63,8 +63,6 @@ class QuizGame {
             questionText: document.getElementById('questionText'),
             optionsList: document.getElementById('optionsList'),
             scoreValue: document.getElementById('scoreValue'),
-            scoreCircle: document.getElementById('scoreCircle'),
-            trophyEmoji: document.getElementById('trophyEmoji'),
             resultsTitle: document.getElementById('resultsTitle'),
             resultsSubtitle: document.getElementById('resultsSubtitle'),
             rewardTitle: document.getElementById('rewardTitle'),
@@ -98,7 +96,6 @@ class QuizGame {
             backFromHistory.addEventListener('click', () => this.showScreen('start'));
         }
 
-        // Rules modal OK button
         const rulesOkayBtn = document.getElementById('rulesOkayBtn');
         if (rulesOkayBtn) {
             rulesOkayBtn.addEventListener('click', () => this.closeRulesAndStart());
@@ -142,6 +139,7 @@ class QuizGame {
     checkEmailAndShowRules() {
         console.log('🚀 Start button clicked');
         console.log('📧 User validation status:', supabaseHandler.isValidated);
+        console.log('🎯 Attempts used:', supabaseHandler.attemptsUsed);
         
         if (!supabaseHandler.isValidated) {
             console.warn('⚠️ User not validated yet');
@@ -228,11 +226,11 @@ class QuizGame {
     }
 
     // =====================================
-    // START QUIZ
+    // START QUIZ - DYNAMIC DIFFICULTY
     // =====================================
 
     startQuiz() {
-        console.log('🎮 Starting quiz...');
+        console.log('🎮 Starting quiz with dynamic difficulty...');
         
         try {
             this.currentQuestion = 0;
@@ -243,11 +241,41 @@ class QuizGame {
             this.answers = [];
             this.isAnswerLocked = false;
 
-            console.log('🎲 Shuffling questions...');
-            this.questions = this.shuffleArray([...CONFIG.questions])
-                .slice(0, CONFIG.quiz.totalQuestions);
+            // Select questions by difficulty
+            console.log('🎲 Selecting questions by difficulty...');
             
-            console.log(`✅ Selected ${this.questions.length} questions`);
+            const easyQuestions = CONFIG.questions.filter(q => q.difficulty === 'easy');
+            const mediumQuestions = CONFIG.questions.filter(q => q.difficulty === 'medium');
+            const hardQuestions = CONFIG.questions.filter(q => q.difficulty === 'hard');
+
+            console.log('📊 Available questions:', {
+                easy: easyQuestions.length,
+                medium: mediumQuestions.length,
+                hard: hardQuestions.length
+            });
+
+            // Questions 1-3: Easy
+            const selectedEasy = this.shuffleArray(easyQuestions).slice(0, CONFIG.quiz.easyQuestions);
+            
+            // Questions 4-7: Medium
+            const selectedMedium = this.shuffleArray(mediumQuestions).slice(0, CONFIG.quiz.mediumQuestions);
+            
+            // Questions 8-10: Hard
+            const selectedHard = this.shuffleArray(hardQuestions).slice(0, CONFIG.quiz.hardQuestions);
+
+            // Combine in order
+            this.questions = [
+                ...selectedEasy,
+                ...selectedMedium,
+                ...selectedHard
+            ];
+
+            console.log('✅ Questions selected:', {
+                total: this.questions.length,
+                easy: selectedEasy.length,
+                medium: selectedMedium.length,
+                hard: selectedHard.length
+            });
 
             this.showScreen('quiz');
             this.loadQuestion();
@@ -269,6 +297,7 @@ class QuizGame {
         const question = this.questions[this.currentQuestion];
         
         console.log(`📝 Loading question ${this.currentQuestion + 1}/${this.questions.length}`);
+        console.log(`Difficulty: ${question.difficulty}`);
         
         this.elements.qNumber.textContent = String(this.currentQuestion + 1).padStart(2, '0');
         
@@ -391,7 +420,8 @@ class QuizGame {
             selected: this.selectedAnswer,
             correct: question.correct,
             isCorrect: isCorrect,
-            category: question.category
+            category: question.category,
+            difficulty: question.difficulty
         });
 
         this.updateProgressPill(this.currentQuestion, isCorrect);
@@ -499,32 +529,68 @@ class QuizGame {
         
         this.showScreen('results');
         
-        // Get reward from supabaseHandler (handles priority filtering)
+        // Get reward
         const reward = supabaseHandler.getRewardForScore(this.score);
         console.log('🎁 Reward earned:', reward);
         
-        this.elements.trophyEmoji.textContent = reward.trophy_emoji || reward.trophy;
-        gsap.fromTo(this.elements.trophyEmoji, 
-            { scale: 0, rotation: -180 },
-            { scale: 1, rotation: 0, duration: 1, ease: 'back.out(1.7)' }
-        );
+        // Animate score
+        this.animateScore();
 
-        this.animateScoreCircle();
+        // Quirky titles based on score
+        const titles = {
+            10: "Dental Genius! 🎯",
+            9: "Almost Perfect! 💪",
+            8: "Knowledge Champion! 🏆",
+            7: "Pretty Sharp! ⭐",
+            6: "Not Bad at All! 👍",
+            5: "Decent Try! 📚",
+            4: "Room to Grow! 🌱",
+            3: "Keep Practicing! 💡",
+            2: "Learning Mode! 📖",
+            1: "Just Getting Started! 🚀",
+            0: "Everyone Starts Somewhere! 💪"
+        };
 
-        this.elements.resultsTitle.textContent = reward.reward_title || reward.title;
-        this.elements.resultsSubtitle.textContent = reward.subtitle || 'Great job!';
-        this.elements.rewardTitle.textContent = 'Your Reward';
-        this.elements.rewardDesc.textContent = reward.reward_description || reward.description;
-        this.elements.couponCode.textContent = reward.coupon;
+        const subtitles = {
+            10: "You're a legend",
+            9: "So close to perfection",
+            8: "Impressive knowledge",
+            7: "Solid performance",
+            6: "Good effort",
+            5: "You got this halfway",
+            4: "Keep going",
+            3: "Practice makes perfect",
+            2: "Don't give up",
+            1: "Try again, you'll improve",
+            0: "Better luck next time"
+        };
+
+        this.elements.resultsTitle.textContent = titles[this.score] || "Nice Try!";
+        this.elements.resultsSubtitle.textContent = subtitles[this.score] || "Keep learning";
+
+        // Check if user has reward attempts left
+        const hasRewardsLeft = supabaseHandler.hasRewardAttemptsLeft();
+        console.log('🎯 Has reward attempts left:', hasRewardsLeft);
 
         const rewardCard = document.getElementById('rewardCard');
-        if (!supabaseHandler.hasRewardAttemptsLeft()) {
+        const noRewardsMessage = document.getElementById('noRewardsMessage');
+
+        if (!hasRewardsLeft) {
+            // Hide reward card, show practice mode message
             rewardCard.style.display = 'none';
-            this.showToast('Practice mode - No reward attempts left', 3000);
+            noRewardsMessage.style.display = 'block';
+            console.log('⚠️ No rewards left - Practice mode');
         } else {
+            // Show reward card
             rewardCard.style.display = 'block';
+            noRewardsMessage.style.display = 'none';
+            
+            this.elements.rewardTitle.textContent = 'Your Reward';
+            this.elements.rewardDesc.textContent = reward.reward_description || reward.description;
+            this.elements.couponCode.textContent = reward.coupon;
         }
 
+        // Save to database
         await supabaseHandler.saveQuizResult(
             this.score, 
             timeTaken, 
@@ -532,6 +598,7 @@ class QuizGame {
             this.answers
         );
 
+        // Confetti for high scores
         if (this.score >= 7 && CONFIG.animations.enabled) {
             this.showConfetti();
         }
@@ -539,7 +606,7 @@ class QuizGame {
         this.playSound('finish');
     }
 
-    animateScoreCircle() {
+    animateScore() {
         const targetScore = this.score;
         const scoreObj = { value: 0 };
         
@@ -550,16 +617,6 @@ class QuizGame {
             onUpdate: () => {
                 this.elements.scoreValue.textContent = Math.floor(scoreObj.value);
             }
-        });
-
-        const circumference = 2 * Math.PI * 90;
-        const scorePercent = (this.score / CONFIG.quiz.totalQuestions) * 100;
-        const offset = circumference - (scorePercent / 100) * circumference;
-        
-        gsap.to(this.elements.scoreCircle, {
-            strokeDashoffset: offset,
-            duration: 2,
-            ease: 'power2.out'
         });
     }
 
@@ -588,8 +645,8 @@ class QuizGame {
             this.elements.historyContainer.innerHTML = `
                 <div class="history-empty">
                     <div class="history-empty-icon" style="font-size:4rem;margin-bottom:1rem;opacity:0.5;">📜</div>
-                    <div style="font-size:1.1rem;margin-bottom:0.5rem;">No quiz history yet</div>
-                    <div style="font-size:0.9rem;opacity:0.7;">Take the quiz to see your results here</div>
+                    <div style="font-size:1.1rem;margin-bottom:0.5rem;">No history yet</div>
+                    <div style="font-size:0.9rem;opacity:0.7;">Take the quiz to see your results</div>
                 </div>
             `;
             return;
