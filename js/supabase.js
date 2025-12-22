@@ -11,6 +11,7 @@ class SupabaseHandler {
         this.userId = null;
         this.attemptsUsed = 0;
         this.isValidated = false;
+        this.allRewards = []; // Store all rewards including priority 0
         
         this.init();
     }
@@ -18,7 +19,6 @@ class SupabaseHandler {
     async init() {
         console.log('🔧 Initializing Supabase...');
         
-        // Initialize Supabase client
         try {
             this.client = window.supabase.createClient(
                 CONFIG.supabase.url,
@@ -30,7 +30,7 @@ class SupabaseHandler {
             return;
         }
 
-        // Try to get email from URL parameter (from Magento)
+        // Try to get email from URL parameter
         const urlParams = new URLSearchParams(window.location.search);
         const emailParam = urlParams.get('email');
 
@@ -39,7 +39,7 @@ class SupabaseHandler {
         if (emailParam && this.isValidEmail(emailParam)) {
             console.log('✅ Valid email from URL');
             this.userEmail = emailParam;
-            await this.validateEmail();
+            await this.validateEmailWithMagento();
         } else {
             console.log('⚠️ No valid email in URL, showing modal');
             this.showEmailModal();
@@ -60,24 +60,21 @@ class SupabaseHandler {
 
         modal.classList.add('active');
 
-        // Auto-focus input
         setTimeout(() => input.focus(), 300);
 
-        // Handle enter key
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 submitBtn.click();
             }
         });
 
-        // Handle submit
         submitBtn.addEventListener('click', async () => {
             const email = input.value.trim();
             console.log('📧 Email submitted:', email);
 
             if (!this.isValidEmail(email)) {
                 console.error('❌ Invalid email format');
-                this.showToast('❌ Please enter a valid email address', 3000);
+                this.showToast('Please enter a valid email address', 3000);
                 input.classList.add('error');
                 
                 gsap.to(input, {
@@ -88,17 +85,14 @@ class SupabaseHandler {
                 return;
             }
 
-            // Valid email
             input.classList.remove('error');
             this.userEmail = email;
 
-            // Show loading state
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="btn-text">Loading...</span>';
+            submitBtn.innerHTML = '<span class="btn-text">Validating...</span>';
 
-            await this.validateEmail();
+            await this.validateEmailWithMagento();
 
-            // Hide modal
             gsap.to(modal, {
                 opacity: 0,
                 scale: 0.9,
@@ -112,11 +106,50 @@ class SupabaseHandler {
         });
     }
 
-    async validateEmail() {
-        console.log('🔍 Validating email:', this.userEmail);
+    async validateEmailWithMagento() {
+        console.log('🔍 Validating email with Magento:', this.userEmail);
         
         try {
-            // Try to get existing user
+            // Call Netlify function to validate with Magento
+            const response = await fetch(CONFIG.urls.magentoApi, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'getCustomer',
+                    email: this.userEmail
+                })
+            });
+
+            const result = await response.json();
+            console.log('📦 Magento API response:', result);
+
+            if (result.success && result.customer) {
+                // Customer exists in Magento
+                console.log('✅ Customer found in Magento:', result.customer);
+                this.userName = `${result.customer.firstname} ${result.customer.lastname}`;
+            } else {
+                // Customer not found, use email
+                console.log('⚠️ Customer not found in Magento, using email');
+                this.userName = this.userEmail.split('@')[0];
+            }
+
+            // Now validate in Supabase
+            await this.validateInSupabase();
+
+        } catch (err) {
+            console.error('❌ Magento validation error:', err);
+            // Fallback to email-based name
+            this.userName = this.userEmail.split('@')[0];
+            await this.validateInSupabase();
+        }
+    }
+
+    async validateInSupabase() {
+        console.log('🔍 Validating in Supabase:', this.userEmail);
+        
+        try {
             const { data, error } = await this.client
                 .from('quiz_users')
                 .select('*')
@@ -129,13 +162,10 @@ class SupabaseHandler {
             }
 
             if (data) {
-                // User exists
                 console.log('✅ Existing user found:', data);
                 this.userId = data.id;
-                this.userName = data.name || this.userEmail.split('@')[0];
                 this.attemptsUsed = data.attempts_used || 0;
             } else {
-                // Create new user
                 console.log('📝 Creating new user');
                 await this.createUser();
             }
@@ -143,29 +173,25 @@ class SupabaseHandler {
             this.isValidated = true;
             console.log('✅ Email validated successfully');
 
-            // Update UI
             this.updateAttemptsDisplay();
             this.updateHistoryButton();
-
-            // Load rewards preview
             this.loadRewardsPreview();
 
         } catch (err) {
             console.error('❌ Validation error:', err);
-            this.showToast('❌ Something went wrong. Please try again.', 3000);
+            this.showToast('Something went wrong. Please try again.', 3000);
         }
     }
 
     async createUser() {
         try {
-            const userName = this.userEmail.split('@')[0];
-            console.log('👤 Creating user:', userName);
+            console.log('👤 Creating user:', this.userName);
             
             const { data, error } = await this.client
                 .from('quiz_users')
                 .insert([{
                     email: this.userEmail,
-                    name: userName,
+                    name: this.userName,
                     attempts_used: 0
                 }])
                 .select()
@@ -177,7 +203,6 @@ class SupabaseHandler {
             }
 
             this.userId = data.id;
-            this.userName = data.name;
             this.attemptsUsed = 0;
 
             console.log('✅ New user created:', data);
@@ -195,7 +220,7 @@ class SupabaseHandler {
                 .from('reward_config')
                 .select('*')
                 .eq('active', true)
-                .order('priority', { ascending: true });
+                .order('min_score', { ascending: false }); // Order by score desc
 
             console.log('✅ Rewards data loaded:', data);
 
@@ -212,23 +237,26 @@ class SupabaseHandler {
 
             carousel.innerHTML = '';
 
-            const rewards = data || CONFIG.rewards;
-            console.log(`📦 Processing ${rewards.length} rewards`);
+            // Store all rewards (including priority 0)
+            this.allRewards = data || CONFIG.rewards;
+            
+            // Filter only rewards to DISPLAY (priority >= 0, including 0)
+            const displayRewards = this.allRewards.filter(r => r.priority >= 0);
+            console.log(`📦 Displaying ${displayRewards.length} rewards (including priority 0)`);
 
-            rewards.forEach((reward, index) => {
+            displayRewards.forEach((reward, index) => {
                 console.log(`  → Reward ${index + 1}:`, {
                     title: reward.reward_title || reward.title,
                     image: reward.image_url,
+                    priority: reward.priority,
                     score: `${reward.min_score}-${reward.max_score}`
                 });
 
                 const card = document.createElement('div');
                 card.className = 'reward-card-compact';
                 
-                // Get title (handle both DB and config format)
                 const title = reward.reward_title || reward.title;
                 
-                // ONLY show product image and name (no score, no description)
                 const imageHTML = reward.image_url 
                     ? `<img src="${reward.image_url}" alt="${title}" class="reward-image-compact" onerror="this.style.display='none'; console.error('Image failed:', '${reward.image_url}')">` 
                     : `<div class="reward-image-compact" style="display:flex;align-items:center;justify-content:center;font-size:2.5rem;">${reward.trophy_emoji || reward.trophy}</div>`;
@@ -240,7 +268,6 @@ class SupabaseHandler {
 
                 carousel.appendChild(card);
 
-                // Animation
                 gsap.fromTo(card,
                     { opacity: 0, scale: 0.8 },
                     { opacity: 1, scale: 1, duration: 0.4, delay: index * 0.08, ease: 'back.out(1.7)' }
@@ -251,13 +278,6 @@ class SupabaseHandler {
 
         } catch (err) {
             console.error('❌ Fatal error loading rewards:', err);
-            console.error('Error details:', {
-                message: err.message,
-                stack: err.stack
-            });
-            
-            // Fallback to config rewards
-            console.log('⚠️ Using fallback rewards from config');
             this.loadRewardsFromConfig();
         }
     }
@@ -272,6 +292,7 @@ class SupabaseHandler {
         }
         
         carousel.innerHTML = '';
+        this.allRewards = CONFIG.rewards;
 
         CONFIG.rewards.forEach((reward, index) => {
             console.log(`  → Config Reward ${index + 1}:`, reward.title);
@@ -288,6 +309,23 @@ class SupabaseHandler {
         console.log('✅ Fallback rewards loaded');
     }
 
+    getRewardForScore(score) {
+        console.log('🎁 Getting reward for score:', score);
+        
+        // Filter rewards with priority > 0 (awardable)
+        const awardableRewards = this.allRewards.filter(r => (r.priority || 1) > 0);
+        
+        console.log('📦 Awardable rewards (priority > 0):', awardableRewards.length);
+        
+        // Find matching reward
+        const reward = awardableRewards.find(r => 
+            score >= r.min_score && score <= r.max_score
+        );
+
+        console.log('✅ Reward found:', reward);
+        return reward || CONFIG.rewards[CONFIG.rewards.length - 1];
+    }
+
     async saveQuizResult(score, timeTaken, reward, answers) {
         if (!this.isValidated) {
             console.error('❌ User not validated, cannot save result');
@@ -297,7 +335,6 @@ class SupabaseHandler {
         console.log('💾 Saving quiz result:', { score, timeTaken, reward });
 
         try {
-            // Save quiz attempt
             const { error: attemptError } = await this.client
                 .from('quiz_attempts')
                 .insert([{
@@ -316,10 +353,8 @@ class SupabaseHandler {
                 console.log('✅ Quiz attempt saved');
             }
 
-            // Increment attempts count
             this.attemptsUsed++;
 
-            // Update user record
             const { error: updateError } = await this.client
                 .from('quiz_users')
                 .update({ 
@@ -334,7 +369,6 @@ class SupabaseHandler {
                 console.log('✅ User attempts updated');
             }
 
-            // Update UI
             this.updateAttemptsDisplay();
             this.updateHistoryButton();
 
@@ -355,7 +389,11 @@ class SupabaseHandler {
 
         try {
             const { data, error } = await this.client
-                .rpc('get_user_history', { user_email: this.userEmail });
+                .from('quiz_attempts')
+                .select('*')
+                .eq('email', this.userEmail)
+                .order('created_at', { ascending: false })
+                .limit(10);
 
             if (error) throw error;
 
@@ -364,23 +402,7 @@ class SupabaseHandler {
 
         } catch (err) {
             console.error('❌ Error loading history:', err);
-            
-            // Fallback: direct query
-            try {
-                console.log('⚠️ Trying fallback history query...');
-                const { data } = await this.client
-                    .from('quiz_attempts')
-                    .select('*')
-                    .eq('email', this.userEmail)
-                    .order('created_at', { ascending: false })
-                    .limit(10);
-
-                console.log('✅ Fallback history loaded:', data?.length || 0, 'entries');
-                return data || [];
-            } catch (fallbackErr) {
-                console.error('❌ Fallback history query failed:', fallbackErr);
-                return [];
-            }
+            return [];
         }
     }
 
@@ -404,36 +426,13 @@ class SupabaseHandler {
         }
     }
 
-    async getRewardConfig() {
-        console.log('🎁 Loading reward config...');
-        
-        try {
-            const { data, error } = await this.client
-                .from('reward_config')
-                .select('*')
-                .eq('active', true)
-                .order('priority', { ascending: true });
-
-            if (error) throw error;
-
-            console.log('✅ Reward config loaded:', data?.length || 0, 'rewards');
-            return data || CONFIG.rewards;
-
-        } catch (err) {
-            console.error('❌ Error loading rewards:', err);
-            return CONFIG.rewards;
-        }
-    }
-
     updateAttemptsDisplay() {
         const remaining = Math.max(0, CONFIG.quiz.maxRewardAttempts - this.attemptsUsed);
         const attemptsEl = document.getElementById('attemptsLeft');
         if (attemptsEl) {
             attemptsEl.textContent = remaining;
-            
             console.log('🎯 Attempts remaining:', remaining);
             
-            // Animate change
             gsap.fromTo(attemptsEl, 
                 { scale: 1.5, color: '#00F2FE' },
                 { scale: 1, color: '#FFFFFF', duration: 0.5, ease: 'back.out(1.7)' }
@@ -445,10 +444,8 @@ class SupabaseHandler {
         const historyBtn = document.getElementById('historyBtn');
         if (historyBtn && this.attemptsUsed > 0) {
             historyBtn.style.display = 'flex';
-            
             console.log('📜 Showing history button');
             
-            // Animate appearance
             gsap.fromTo(historyBtn,
                 { opacity: 0, y: 20 },
                 { opacity: 1, y: 0, duration: 0.5, ease: 'back.out(1.7)' }
@@ -474,16 +471,12 @@ class SupabaseHandler {
         if (typeof quiz !== 'undefined' && quiz.showToast) {
             quiz.showToast(message, duration);
         } else {
-            // Fallback
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
             const toastIcon = document.getElementById('toastIcon');
             
-            if (message.includes('✅')) toastIcon.textContent = '✅';
-            else if (message.includes('❌')) toastIcon.textContent = '❌';
-            else toastIcon.textContent = 'ℹ️';
-            
-            toastMessage.textContent = message.replace(/[✅❌]/g, '').trim();
+            toastIcon.textContent = '✓';
+            toastMessage.textContent = message;
             toast.classList.add('show');
             
             setTimeout(() => toast.classList.remove('show'), duration);
@@ -491,7 +484,6 @@ class SupabaseHandler {
     }
 }
 
-// Initialize Supabase handler
 let supabaseHandler;
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 DOM Content Loaded - Initializing Supabase Handler');
