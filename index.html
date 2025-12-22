@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#6C5CE7">
-    <title>PinkBlue Quizmas 2025 | Test Your Dental IQ 🎄</title>
+    <title>PinkBlue Quizmas 2025</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,32 +44,31 @@
         <section class="screen active" id="startScreen">
             <div class="screen-content">
                 
-                <!-- Hero Section (COMPACT) -->
+                <!-- Hero Section -->
                 <div class="hero-section-compact">
                     <h1 class="hero-title-compact">
-                        <span class="gradient-text">PinkBlue Quizmas 🎄</span>
+                        <span class="gradient-text">PinkBlue Quizmas</span>
                     </h1>
                     <p class="hero-subtitle-compact">
-                        10 Questions • 2 Minutes • Win Rewards
+                        10 questions. 2 minutes. Win exclusive rewards.
                     </p>
                 </div>
 
-                <!-- What You Could Win (CLEAN) -->
+                <!-- What You Could Win -->
                 <div class="rewards-preview-compact">
-                    <h3 class="section-title-compact">🏆 What You Could Win</h3>
+                    <h3 class="section-title-compact">What You Could Win</h3>
                     <div class="rewards-carousel-compact" id="rewardsCarousel">
-                        <!-- Loaded dynamically -->
                         <div class="loader">
                             <div class="loader-spinner"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Start Button (PROMINENT) -->
+                <!-- Action Buttons -->
                 <div class="button-stack">
                     <button class="btn btn-primary btn-glow btn-large" id="startBtn">
                         <span class="btn-text">Start Challenge</span>
-                        <span class="btn-icon">🚀</span>
+                        <span class="btn-icon">→</span>
                     </button>
                     
                     <button class="btn btn-secondary btn-small" id="historyBtn" style="display: none;">
@@ -102,9 +101,7 @@
                 <!-- Progress Indicator -->
                 <div class="progress-pills">
                     <div class="progress-text" id="progressText">Question 1 of 10</div>
-                    <div class="pill-container" id="progressPills">
-                        <!-- Pills generated dynamically -->
-                    </div>
+                    <div class="pill-container" id="progressPills"></div>
                 </div>
 
                 <!-- Question Card -->
@@ -118,9 +115,7 @@
                 </div>
 
                 <!-- Options -->
-                <div class="options-list" id="optionsList">
-                    <!-- Options generated dynamically -->
-                </div>
+                <div class="options-list" id="optionsList"></div>
 
                 <!-- Next Button -->
                 <button class="btn btn-primary btn-disabled" id="nextBtn" disabled>
@@ -154,8 +149,8 @@
                 </div>
 
                 <!-- Results Title -->
-                <h2 class="results-title" id="resultsTitle">Amazing Work!</h2>
-                <p class="results-subtitle" id="resultsSubtitle">You're in the top 10%</p>
+                <h2 class="results-title" id="resultsTitle">Great Job!</h2>
+                <p class="results-subtitle" id="resultsSubtitle">You scored well</p>
 
                 <!-- Reward Card -->
                 <div class="reward-card" id="rewardCard">
@@ -166,7 +161,7 @@
                     <p class="reward-desc" id="rewardDesc"></p>
                     
                     <div class="coupon-box">
-                        <div class="coupon-label">Your Coupon Code</div>
+                        <div class="coupon-label">Coupon Code</div>
                         <div class="coupon-code" id="couponCode">LOADING...</div>
                         <button class="btn-copy" id="copyBtn">
                             <span class="copy-icon">📋</span>
@@ -201,53 +196,47 @@
         <!-- Screen: Quiz History -->
         <section class="screen" id="historyScreen">
             <div class="screen-content">
-                
                 <div class="screen-header">
                     <button class="back-btn" id="backFromHistory">
                         <span class="back-icon">←</span>
                     </button>
-                    <h2 class="screen-title">My Quiz History 📜</h2>
+                    <h2 class="screen-title">My History</h2>
                     <div class="header-spacer"></div>
                 </div>
-
                 <div class="history-container" id="historyContainer">
                     <div class="loader">
                         <div class="loader-spinner"></div>
                     </div>
                 </div>
-
             </div>
         </section>
 
         <!-- Screen: Leaderboard -->
         <section class="screen" id="leaderboardScreen">
             <div class="screen-content">
-                
                 <div class="screen-header">
                     <button class="back-btn" id="backBtn">
                         <span class="back-icon">←</span>
                     </button>
-                    <h2 class="screen-title">Global Leaderboard 🏆</h2>
+                    <h2 class="screen-title">Leaderboard</h2>
                     <div class="header-spacer"></div>
                 </div>
-
                 <div class="leaderboard-container" id="leaderboardContainer">
                     <div class="loader">
                         <div class="loader-spinner"></div>
                     </div>
                 </div>
-
             </div>
         </section>
 
     </div>
 
-    <!-- Email Gate Modal -->
+    <!-- Email Modal -->
     <div class="modal-overlay" id="emailModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">🦷 Enter Your Email</h3>
-                <p class="modal-subtitle">We need your email to save your scores and send rewards!</p>
+                <h3 class="modal-title">Enter Your Email</h3>
+                <p class="modal-subtitle">We need your email to validate and save your progress.</p>
             </div>
             <div class="modal-body">
                 <input 
@@ -257,12 +246,35 @@
                     placeholder="your.email@example.com"
                     autocomplete="email"
                 >
-                <div class="email-hint">Don't worry, no spam! 🤞</div>
+                <div class="email-hint">Your email will be used for verification only.</div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary" id="emailSubmitBtn">
-                    <span class="btn-text">Let's Go!</span>
-                    <span class="btn-icon">🚀</span>
+                    <span class="btn-text">Continue</span>
+                    <span class="btn-icon">→</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div class="modal-overlay" id="rulesModal">
+        <div class="modal-content modal-rules">
+            <div class="modal-header">
+                <h3 class="modal-title">Quiz Rules</h3>
+            </div>
+            <div class="modal-body">
+                <ul class="rules-list">
+                    <li>Answer 10 dental knowledge questions</li>
+                    <li>Complete within 2 minutes ⏱️</li>
+                    <li>Win rewards based on your score</li>
+                    <li>You get 2 free attempts with rewards</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-large" id="rulesOkayBtn">
+                    <span class="btn-text">Got It, Let's Go</span>
+                    <span class="btn-icon">→</span>
                 </button>
             </div>
         </div>
@@ -274,7 +286,7 @@
             <div class="countdown-circle">
                 <div class="countdown-number" id="countdownNumber">3</div>
             </div>
-            <div class="countdown-text">Get Ready! 🧠</div>
+            <div class="countdown-text">Get ready</div>
         </div>
     </div>
 
