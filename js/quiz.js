@@ -1,9 +1,11 @@
 // =================================
-// QUIZ GAME LOGIC
+// QUIZ GAME ENGINE
+// Modern, Smooth, Addictive
 // =================================
 
 class QuizGame {
     constructor() {
+        // Game state
         this.currentQuestion = 0;
         this.score = 0;
         this.timeLeft = CONFIG.quiz.timeLimit;
@@ -12,12 +14,23 @@ class QuizGame {
         this.selectedAnswer = null;
         this.startTime = null;
         this.answers = [];
+        this.isAnswerLocked = false;
         
-        this.initElements();
-        this.bindEvents();
+        // DOM elements
+        this.elements = {};
+        this.screens = {};
+        this.buttons = {};
+        
+        this.init();
     }
 
-    initElements() {
+    init() {
+        this.cacheElements();
+        this.bindEvents();
+        this.setupProgressPills();
+    }
+
+    cacheElements() {
         // Screens
         this.screens = {
             start: document.getElementById('startScreen'),
@@ -40,19 +53,22 @@ class QuizGame {
 
         // Quiz elements
         this.elements = {
-            timer: document.getElementById('timerValue'),
-            progress: document.getElementById('progressFill'),
+            timer: document.getElementById('timerDisplay'),
+            timerProgress: document.getElementById('timerProgress'),
             progressText: document.getElementById('progressText'),
-            questionNumber: document.getElementById('questionNumber'),
+            progressPills: document.getElementById('progressPills'),
+            qNumber: document.getElementById('qNumber'),
             questionText: document.getElementById('questionText'),
-            optionsContainer: document.getElementById('optionsContainer'),
+            optionsList: document.getElementById('optionsList'),
             scoreValue: document.getElementById('scoreValue'),
-            scoreRing: document.getElementById('scoreRing'),
-            trophyIcon: document.getElementById('trophyIcon'),
+            scoreCircle: document.getElementById('scoreCircle'),
+            trophyEmoji: document.getElementById('trophyEmoji'),
             resultsTitle: document.getElementById('resultsTitle'),
+            resultsSubtitle: document.getElementById('resultsSubtitle'),
             rewardTitle: document.getElementById('rewardTitle'),
             rewardDesc: document.getElementById('rewardDesc'),
-            couponCode: document.getElementById('couponCode')
+            couponCode: document.getElementById('couponCode'),
+            leaderboardContainer: document.getElementById('leaderboardContainer')
         };
     }
 
@@ -67,20 +83,38 @@ class QuizGame {
         this.buttons.back.addEventListener('click', () => this.showScreen('start'));
     }
 
+    setupProgressPills() {
+        for (let i = 0; i < CONFIG.quiz.totalQuestions; i++) {
+            const pill = document.createElement('div');
+            pill.className = 'progress-pill';
+            pill.dataset.index = i;
+            this.elements.progressPills.appendChild(pill);
+        }
+    }
+
+    // =====================================
+    // SCREEN MANAGEMENT
+    // =====================================
+
     showScreen(screenName) {
+        // Hide all screens
         Object.values(this.screens).forEach(screen => {
             screen.classList.remove('active');
         });
+
+        // Show requested screen
         this.screens[screenName].classList.add('active');
 
-        // Animate with GSAP
-        gsap.from(this.screens[screenName], {
-            opacity: 0,
-            y: 30,
-            duration: 0.6,
-            ease: 'back.out(1.7)'
-        });
+        // Animate entrance
+        gsap.fromTo(this.screens[screenName], 
+            { opacity: 0, y: 30 },
+            { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }
+        );
     }
+
+    // =====================================
+    // COUNTDOWN
+    // =====================================
 
     startCountdown() {
         const overlay = document.getElementById('countdownOverlay');
@@ -120,55 +154,56 @@ class QuizGame {
         }, 1000);
     }
 
+    // =====================================
+    // QUIZ START
+    // =====================================
+
     startQuiz() {
-        // Select random questions
-        this.questions = this.shuffleArray([...CONFIG.questions])
-            .slice(0, CONFIG.quiz.totalQuestions);
-        
+        // Reset state
         this.currentQuestion = 0;
         this.score = 0;
         this.timeLeft = CONFIG.quiz.timeLimit;
         this.selectedAnswer = null;
         this.startTime = Date.now();
         this.answers = [];
+        this.isAnswerLocked = false;
 
-        // Minimize header
-        const header = document.getElementById('mainHeader');
-        gsap.to(header, {
-            scale: 0.9,
-            opacity: 0.8,
-            duration: 0.5
-        });
+        // Select random questions
+        this.questions = this.shuffleArray([...CONFIG.questions])
+            .slice(0, CONFIG.quiz.totalQuestions);
 
+        // Show quiz screen
         this.showScreen('quiz');
+
+        // Load first question
         this.loadQuestion();
+
+        // Start timer
         this.startTimer();
+
+        // Play sound effect (optional)
+        this.playSound('start');
     }
+
+    // =====================================
+    // QUESTION LOADING
+    // =====================================
 
     loadQuestion() {
         const question = this.questions[this.currentQuestion];
         
         // Update question number
-        this.elements.questionNumber.textContent = 
-            String(this.currentQuestion + 1).padStart(2, '0');
+        this.elements.qNumber.textContent = String(this.currentQuestion + 1).padStart(2, '0');
         
-        // Update question text with animation
-        gsap.from(this.elements.questionText, {
-            opacity: 0,
-            y: 20,
-            duration: 0.5
-        });
+        // Animate question text
+        gsap.fromTo(this.elements.questionText, 
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
+        );
         this.elements.questionText.textContent = question.question;
 
         // Update progress
-        const progress = ((this.currentQuestion + 1) / CONFIG.quiz.totalQuestions) * 100;
-        gsap.to(this.elements.progress, {
-            width: progress + '%',
-            duration: 0.6,
-            ease: 'power2.out'
-        });
-        this.elements.progressText.textContent = 
-            `Question ${this.currentQuestion + 1} of ${CONFIG.quiz.totalQuestions}`;
+        this.updateProgress();
 
         // Load options
         this.loadOptions(question.options);
@@ -177,14 +212,16 @@ class QuizGame {
         this.buttons.next.disabled = true;
         this.buttons.next.classList.add('btn-disabled');
         this.selectedAnswer = null;
+        this.isAnswerLocked = false;
     }
 
     loadOptions(options) {
-        this.elements.optionsContainer.innerHTML = '';
+        this.elements.optionsList.innerHTML = '';
         
         options.forEach((option, index) => {
             const optionEl = document.createElement('div');
-            optionEl.className = 'option';
+            optionEl.className = 'option-item';
+            optionEl.dataset.index = index;
             optionEl.innerHTML = `
                 <div class="option-letter">${String.fromCharCode(65 + index)}</div>
                 <div class="option-text">${option}</div>
@@ -192,61 +229,106 @@ class QuizGame {
             
             optionEl.addEventListener('click', () => this.selectAnswer(index));
             
-            // Animate option appearance
-            gsap.from(optionEl, {
-                opacity: 0,
-                x: -30,
-                duration: 0.4,
-                delay: index * 0.1,
-                ease: 'back.out(1.7)'
-            });
+            // Stagger animation
+            gsap.fromTo(optionEl, 
+                { opacity: 0, x: -30 },
+                { 
+                    opacity: 1, 
+                    x: 0, 
+                    duration: 0.4,
+                    delay: index * 0.1,
+                    ease: 'back.out(1.7)'
+                }
+            );
             
-            this.elements.optionsContainer.appendChild(optionEl);
+            this.elements.optionsList.appendChild(optionEl);
         });
     }
 
+    // =====================================
+    // ANSWER SELECTION
+    // =====================================
+
     selectAnswer(index) {
-        const options = this.elements.optionsContainer.querySelectorAll('.option');
+        if (this.isAnswerLocked) return;
+
+        const options = this.elements.optionsList.querySelectorAll('.option-item');
         
         // Remove previous selection
         options.forEach(opt => opt.classList.remove('selected'));
         
-        // Add selection
+        // Add new selection
         options[index].classList.add('selected');
         
         // Animate selection
         gsap.to(options[index], {
-            x: 5,
-            duration: 0.3,
-            ease: 'back.out(1.7)'
+            scale: 0.98,
+            duration: 0.2,
+            yoyo: true,
+            repeat: 1,
+            ease: 'power2.inOut'
         });
+
+        // Haptic feedback (if supported)
+        if (navigator.vibrate) {
+            navigator.vibrate(10);
+        }
         
         this.selectedAnswer = index;
         
         // Enable next button
         this.buttons.next.disabled = false;
         this.buttons.next.classList.remove('btn-disabled');
+
+        // Play sound
+        this.playSound('select');
     }
 
+    // =====================================
+    // NEXT QUESTION
+    // =====================================
+
     nextQuestion() {
-        if (this.selectedAnswer === null) return;
+        if (this.selectedAnswer === null || this.isAnswerLocked) return;
+
+        this.isAnswerLocked = true;
 
         const question = this.questions[this.currentQuestion];
-        const options = this.elements.optionsContainer.querySelectorAll('.option');
-        
+        const options = this.elements.optionsList.querySelectorAll('.option-item');
+        const isCorrect = this.selectedAnswer === question.correct;
+
         // Show correct/incorrect
         options.forEach((opt, index) => {
             if (index === question.correct) {
                 opt.classList.add('correct');
+                gsap.to(opt, {
+                    scale: 1.03,
+                    duration: 0.3,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: 'power2.inOut'
+                });
             } else if (index === this.selectedAnswer) {
                 opt.classList.add('incorrect');
+                gsap.to(opt, {
+                    x: [-10, 10, -10, 10, 0],
+                    duration: 0.5,
+                    ease: 'power2.inOut'
+                });
             }
         });
 
-        // Check answer
-        const isCorrect = this.selectedAnswer === question.correct;
+        // Update score
         if (isCorrect) {
             this.score++;
+            this.playSound('correct');
+            
+            // Confetti burst for correct answer
+            if (CONFIG.animations.enabled) {
+                this.miniConfetti();
+            }
+        } else {
+            this.playSound('wrong');
         }
 
         // Store answer
@@ -254,8 +336,12 @@ class QuizGame {
             question: question.question,
             selected: this.selectedAnswer,
             correct: question.correct,
-            isCorrect: isCorrect
+            isCorrect: isCorrect,
+            category: question.category
         });
+
+        // Update progress pill
+        this.updateProgressPill(this.currentQuestion, isCorrect);
 
         // Move to next question after delay
         setTimeout(() => {
@@ -269,21 +355,58 @@ class QuizGame {
         }, 1500);
     }
 
+    // =====================================
+    // PROGRESS TRACKING
+    // =====================================
+
+    updateProgress() {
+        const progress = ((this.currentQuestion + 1) / CONFIG.quiz.totalQuestions) * 100;
+        
+        gsap.to(this.elements.progressPills.querySelector(`[data-index="${this.currentQuestion}"]`), {
+            backgroundColor: '#4FACFE',
+            width: '32px',
+            duration: 0.5,
+            ease: 'power2.out'
+        });
+
+        this.elements.progressText.textContent = 
+            `Question ${this.currentQuestion + 1} of ${CONFIG.quiz.totalQuestions}`;
+    }
+
+    updateProgressPill(index, isCorrect) {
+        const pill = this.elements.progressPills.querySelector(`[data-index="${index}"]`);
+        
+        gsap.to(pill, {
+            backgroundColor: isCorrect ? '#00D68F' : '#FF6B6B',
+            duration: 0.3,
+            ease: 'power2.out'
+        });
+
+        pill.classList.add('completed');
+    }
+
+    // =====================================
+    // TIMER
+    // =====================================
+
     startTimer() {
         this.timer = setInterval(() => {
             this.timeLeft--;
             this.updateTimerDisplay();
             
-            // Warning animation at 30 seconds
+            // Warning at 30 seconds
             if (this.timeLeft === 30) {
                 gsap.to(this.elements.timer.parentElement, {
                     scale: 1.1,
                     duration: 0.3,
                     yoyo: true,
-                    repeat: 5
+                    repeat: 5,
+                    ease: 'power2.inOut'
                 });
+                this.playSound('warning');
             }
             
+            // Time's up
             if (this.timeLeft <= 0) {
                 this.endQuiz();
             }
@@ -293,15 +416,25 @@ class QuizGame {
     updateTimerDisplay() {
         const mins = Math.floor(this.timeLeft / 60);
         const secs = this.timeLeft % 60;
-        this.elements.timer.textContent = 
-            `${mins}:${secs.toString().padStart(2, '0')}`;
+        this.elements.timer.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
         
-        // Change color when time is running out
+        // Update progress bar
+        const percentage = (this.timeLeft / CONFIG.quiz.timeLimit) * 100;
+        gsap.to(this.elements.timerProgress, {
+            width: percentage + '%',
+            duration: 1,
+            ease: 'linear'
+        });
+
+        // Change color when time running out
         if (this.timeLeft <= 30) {
-            this.elements.timer.parentElement.style.background = 
-                'linear-gradient(135deg, #FF4444 0%, #CC0000 100%)';
+            this.elements.timer.style.color = '#FF6B6B';
         }
     }
+
+    // =====================================
+    // QUIZ END
+    // =====================================
 
     endQuiz() {
         clearInterval(this.timer);
@@ -314,58 +447,76 @@ class QuizGame {
     async showResults(timeTaken) {
         this.showScreen('results');
         
-        // Animate trophy
-        gsap.from(this.elements.trophyIcon, {
-            scale: 0,
-            rotation: -180,
-            duration: 1,
-            ease: 'back.out(1.7)'
-        });
-
-        // Animate score
-        gsap.to({}, {
-            duration: 2,
-            onUpdate: function() {
-                const progress = this.progress();
-                const currentScore = Math.floor(progress * quiz.score);
-                quiz.elements.scoreValue.textContent = currentScore;
-            }
-        });
-
-        // Animate score ring
-        const circumference = 2 * Math.PI * 90;
-        const scorePercent = (this.score / CONFIG.quiz.totalQuestions) * 100;
-        const offset = circumference - (scorePercent / 100) * circumference;
-        
-        gsap.to(this.elements.scoreRing, {
-            strokeDashoffset: offset,
-            duration: 2,
-            ease: 'power2.out'
-        });
-
         // Get reward
         const reward = this.getReward(this.score);
         
-        // Update reward display
-        this.elements.trophyIcon.textContent = reward.trophy;
+        // Animate trophy
+        this.elements.trophyEmoji.textContent = reward.trophy;
+        gsap.fromTo(this.elements.trophyEmoji, 
+            { scale: 0, rotation: -180 },
+            { scale: 1, rotation: 0, duration: 1, ease: 'back.out(1.7)' }
+        );
+
+        // Animate score circle
+        this.animateScoreCircle();
+
+        // Update results
         this.elements.resultsTitle.textContent = reward.title;
-        this.elements.rewardTitle.textContent = '🎁 ' + reward.message;
+        this.elements.resultsSubtitle.textContent = reward.subtitle;
+        this.elements.rewardTitle.textContent = 'Your Reward 🎁';
         this.elements.rewardDesc.textContent = reward.description;
         this.elements.couponCode.textContent = reward.coupon;
 
         // Hide reward card if no attempts left
+        const rewardCard = document.getElementById('rewardCard');
         if (!supabaseHandler.hasRewardAttemptsLeft()) {
-            document.getElementById('rewardCard').style.display = 'none';
-            this.showToast('🎯 Practice mode - No more reward attempts!', 'info');
+            rewardCard.style.display = 'none';
+            this.showToast('🎯 Practice mode - No reward attempts left', 3000);
+        } else {
+            rewardCard.style.display = 'block';
         }
 
         // Save to database
-        await supabaseHandler.saveQuizResult(this.score, timeTaken, reward.coupon);
+        await supabaseHandler.saveQuizResult(
+            this.score, 
+            timeTaken, 
+            reward.coupon,
+            this.answers
+        );
 
-        // Show confetti for high scores
-        if (this.score >= 7) {
+        // Confetti for high scores
+        if (this.score >= 7 && CONFIG.animations.enabled) {
             this.showConfetti();
         }
+
+        // Play sound
+        this.playSound('finish');
+    }
+
+    animateScoreCircle() {
+        // Animate score number
+        const targetScore = this.score;
+        const scoreObj = { value: 0 };
+        
+        gsap.to(scoreObj, {
+            value: targetScore,
+            duration: 2,
+            ease: 'power2.out',
+            onUpdate: () => {
+                this.elements.scoreValue.textContent = Math.floor(scoreObj.value);
+            }
+        });
+
+        // Animate score circle
+        const circumference = 2 * Math.PI * 90;
+        const scorePercent = (this.score / CONFIG.quiz.totalQuestions) * 100;
+        const offset = circumference - (scorePercent / 100) * circumference;
+        
+        gsap.to(this.elements.scoreCircle, {
+            strokeDashoffset: offset,
+            duration: 2,
+            ease: 'power2.out'
+        });
     }
 
     getReward(score) {
@@ -374,75 +525,83 @@ class QuizGame {
         );
     }
 
-    showConfetti() {
-        const confetti = document.getElementById('confetti');
-        
-        for (let i = 0; i < 50; i++) {
-            const particle = document.createElement('div');
-            particle.style.cssText = `
-                position: absolute;
-                width: 10px;
-                height: 10px;
-                background: ${['#FFD700', '#FF6B35', '#00FF7F'][Math.floor(Math.random() * 3)]};
-                top: 50%;
-                left: 50%;
-                border-radius: 50%;
-            `;
-            confetti.appendChild(particle);
-            
-            gsap.to(particle, {
-                x: (Math.random() - 0.5) * 400,
-                y: (Math.random() - 0.5) * 400,
-                opacity: 0,
-                duration: 2,
-                ease: 'power2.out',
-                onComplete: () => particle.remove()
-            });
-        }
-    }
+    // =====================================
+    // LEADERBOARD
+    // =====================================
 
     async showLeaderboard() {
         this.showScreen('leaderboard');
         
-        const container = document.getElementById('leaderboardContainer');
-        container.innerHTML = '<div class="spinner"></div>';
+        this.elements.leaderboardContainer.innerHTML = `
+            <div class="loader">
+                <div class="loader-spinner"></div>
+            </div>
+        `;
         
         const data = await supabaseHandler.getLeaderboard();
         
-        container.innerHTML = '';
+        this.elements.leaderboardContainer.innerHTML = '';
+        
+        if (data.length === 0) {
+            this.elements.leaderboardContainer.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
+                    No leaderboard data yet. Be the first!
+                </div>
+            `;
+            return;
+        }
         
         data.forEach((entry, index) => {
+            const isTopThree = index < 3;
+            const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
             const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
-            const name = entry.email.split('@')[0];
+            
+            const name = entry.name || entry.email.split('@')[0];
             const mins = Math.floor(entry.time_taken / 60);
             const secs = entry.time_taken % 60;
             
             const item = document.createElement('div');
-            item.className = 'leaderboard-item';
+            item.className = 'leader-item';
             item.innerHTML = `
-                <div class="rank-medal">${medal}</div>
-                <div class="leaderboard-info">
-                    <div class="leaderboard-name">${name}</div>
-                    <div class="leaderboard-time">Time: ${mins}:${secs.toString().padStart(2, '0')}</div>
+                <div class="leader-rank ${rankClass}">${medal}</div>
+                <div class="leader-info">
+                    <div class="leader-name">${name}</div>
+                    <div class="leader-time">Time: ${mins}:${secs.toString().padStart(2, '0')}</div>
                 </div>
-                <div class="leaderboard-score">${entry.score}/10</div>
+                <div class="leader-score">${entry.score}<span style="opacity:0.5; font-size:1rem;">/10</span></div>
             `;
             
-            container.appendChild(item);
+            this.elements.leaderboardContainer.appendChild(item);
             
-            gsap.from(item, {
-                opacity: 0,
-                x: -30,
-                duration: 0.5,
-                delay: index * 0.05
-            });
+            // Stagger animation
+            gsap.fromTo(item, 
+                { opacity: 0, x: -30 },
+                { 
+                    opacity: 1, 
+                    x: 0, 
+                    duration: 0.5,
+                    delay: index * 0.05,
+                    ease: 'power2.out'
+                }
+            );
         });
     }
 
+    // =====================================
+    // SHARING & ACTIONS
+    // =====================================
+
     shareOnWhatsApp() {
-        const message = CONFIG.shareMessage(this.score, CONFIG.quiz.totalQuestions);
+        const message = CONFIG.shareMessage(
+            this.score, 
+            CONFIG.quiz.totalQuestions,
+            supabaseHandler.userName
+        );
+        
         const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');
+
+        this.showToast('✅ Opening WhatsApp...', 2000);
     }
 
     redeemReward() {
@@ -453,61 +612,143 @@ class QuizGame {
         const code = this.elements.couponCode.textContent;
         
         navigator.clipboard.writeText(code).then(() => {
-            this.showToast('✅ Coupon code copied!', 'success');
+            this.showToast('✅ Coupon code copied!', 2000);
             
             gsap.to(this.elements.couponCode, {
                 scale: 1.1,
                 duration: 0.2,
                 yoyo: true,
-                repeat: 1
+                repeat: 1,
+                ease: 'power2.inOut'
             });
+
+            // Haptic feedback
+            if (navigator.vibrate) {
+                navigator.vibrate([10, 50, 10]);
+            }
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            this.showToast('❌ Failed to copy code', 2000);
         });
     }
 
-    showToast(message, type = 'info') {
+    // =====================================
+    // RESTART
+    // =====================================
+
+    restart() {
+        this.showScreen('start');
+        
+        // Reset progress pills
+        const pills = this.elements.progressPills.querySelectorAll('.progress-pill');
+        pills.forEach(pill => {
+            pill.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+            pill.style.width = '24px';
+            pill.classList.remove('completed', 'active');
+        });
+    }
+
+    // =====================================
+    // ANIMATIONS & EFFECTS
+    // =====================================
+
+    showConfetti() {
+        const duration = CONFIG.animations.confettiDuration;
+        const end = Date.now() + duration;
+
+        const colors = ['#6C5CE7', '#A29BFE', '#00F2FE', '#4FACFE', '#00D68F'];
+
+        (function frame() {
+            confetti({
+                particleCount: 3,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: colors
+            });
+            confetti({
+                particleCount: 3,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: colors
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+    }
+
+    miniConfetti() {
+        confetti({
+            particleCount: 20,
+            spread: 40,
+            origin: { y: 0.6 },
+            colors: ['#00D68F', '#4FACFE', '#A29BFE']
+        });
+    }
+
+    showToast(message, duration = 3000) {
         const toast = document.getElementById('toast');
-        const icon = document.getElementById('toastIcon');
-        const msg = document.getElementById('toastMessage');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = document.getElementById('toastIcon');
         
-        const icons = {
-            success: '✅',
-            error: '❌',
-            info: 'ℹ️',
-            warning: '⚠️'
-        };
+        // Set icon based on message
+        if (message.includes('✅')) {
+            toastIcon.textContent = '✅';
+        } else if (message.includes('❌')) {
+            toastIcon.textContent = '❌';
+        } else if (message.includes('🎯')) {
+            toastIcon.textContent = '🎯';
+        } else {
+            toastIcon.textContent = 'ℹ️';
+        }
         
-        icon.textContent = icons[type] || icons.info;
-        msg.textContent = message;
+        toastMessage.textContent = message.replace(/[✅❌🎯]/g, '').trim();
         
         toast.classList.add('show');
         
         setTimeout(() => {
             toast.classList.remove('show');
-        }, 3000);
+        }, duration);
     }
 
-    restart() {
-        // Reset header
-        const header = document.getElementById('mainHeader');
-        gsap.to(header, {
-            scale: 1,
-            opacity: 1,
-            duration: 0.5
-        });
-        
-        this.showScreen('start');
+    playSound(type) {
+        // Optional: Add sound effects
+        // You can use Web Audio API or HTML5 Audio
+        // For now, just haptic feedback
+        if (navigator.vibrate) {
+            const patterns = {
+                'select': [10],
+                'correct': [10, 50, 10],
+                'wrong': [50],
+                'warning': [50, 50, 50],
+                'start': [10, 30, 10],
+                'finish': [50, 100, 50]
+            };
+            
+            if (patterns[type]) {
+                navigator.vibrate(patterns[type]);
+            }
+        }
     }
+
+    // =====================================
+    // UTILITIES
+    // =====================================
 
     shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
-        return array;
+        return shuffled;
     }
 }
 
-// Initialize quiz
+// Initialize quiz when DOM is ready
 let quiz;
 document.addEventListener('DOMContentLoaded', () => {
     quiz = new QuizGame();
