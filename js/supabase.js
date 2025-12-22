@@ -22,7 +22,7 @@ class SupabaseHandler {
   async init() {
     try {
       if (!window.supabase) {
-        console.warn('⚠️ Supabase CDN not loaded, using fallback');
+        console.warn('Supabase CDN not loaded, using fallback');
         this.loadFallbackRewards();
         return;
       }
@@ -32,22 +32,17 @@ class SupabaseHandler {
         CONFIG.supabase.key
       );
 
-      console.log('✅ Supabase client initialized');
-
-      // Check if email is in URL
       const urlParams = new URLSearchParams(window.location.search);
       const emailParam = urlParams.get('email');
 
       if (emailParam && this.isValidEmail(emailParam)) {
         this.userEmail = emailParam;
-        console.log('📧 Email from URL:', emailParam);
         await this.validateEmailWithMagento();
       }
 
-      // Load rewards (for carousel)
       await this.loadRewardsPreview();
     } catch (err) {
-      console.error('❌ Supabase init error:', err);
+      console.error('Supabase init error:', err);
       this.loadFallbackRewards();
     }
   }
@@ -88,7 +83,6 @@ class SupabaseHandler {
       try {
         await this.validateEmailWithMagento();
 
-        // After validation, show rules modal
         if (window.quiz?.showRulesModal) {
           quiz.showRulesModal();
         }
@@ -119,10 +113,8 @@ class SupabaseHandler {
       } else {
         this.userName = this.userEmail.split('@')[0];
       }
-
-      console.log('👤 User name:', this.userName);
     } catch (err) {
-      console.warn('⚠️ Magento API failed, using email as name:', err);
+      console.warn('Magento API failed, using email as name:', err);
       this.userName = this.userEmail.split('@')[0];
     }
 
@@ -152,9 +144,7 @@ class SupabaseHandler {
       if (data) {
         this.userId = data.id;
         this.attemptsUsed = data.attempts_used || 0;
-        console.log('✅ User found - attempts used:', this.attemptsUsed);
       } else {
-        console.log('🆕 Creating new user');
         await this.createUser();
       }
 
@@ -162,7 +152,7 @@ class SupabaseHandler {
       this.updateAttemptsDisplay();
       this.updateHistoryButton();
     } catch (err) {
-      console.error('❌ Supabase validation failed:', err);
+      console.error('Supabase validation failed:', err);
       this.isValidated = false;
     }
   }
@@ -188,10 +178,9 @@ class SupabaseHandler {
       if (data) {
         this.userId = data.id;
         this.attemptsUsed = 0;
-        console.log('✅ User created with ID:', this.userId);
       }
     } catch (err) {
-      console.error('❌ Failed to create user:', err);
+      console.error('Failed to create user:', err);
     }
   }
 
@@ -226,10 +215,9 @@ class SupabaseHandler {
         this.rewardCodeMap[`${r.min_score}-${r.max_score}`] = r.reward;
       });
 
-      console.log('✅ Loaded', this.allRewards.length, 'rewards');
       this.renderRewardsCarousel();
     } catch (err) {
-      console.warn('⚠️ Rewards load failed, using fallback:', err);
+      console.warn('Rewards load failed, using fallback:', err);
       this.loadFallbackRewards();
     }
   }
@@ -288,92 +276,31 @@ class SupabaseHandler {
   }
 
   updateAttemptsDisplay() {
-    console.log('🔄 Updating attempts display:', this.attemptsUsed, '/', 2);
     if (window.quiz && typeof quiz.updateAttemptsUI === 'function') {
       quiz.updateAttemptsUI(this.attemptsUsed, this.isValidated);
+    } else {
+      // Fallback: write directly to #attemptsLeft if quiz not ready yet
+      const el = document.getElementById('attemptsLeft');
+      if (el) {
+        el.textContent = Math.max(0, 2 - this.attemptsUsed);
+      }
     }
   }
 
   updateHistoryButton() {
-    console.log('🔄 Updating history button - Email:', this.userEmail, 'Validated:', this.isValidated);
     if (window.quiz && typeof quiz.updateHistoryState === 'function') {
       quiz.updateHistoryState(this.userEmail, this.isValidated);
+    } else {
+      const historyBtn = document.getElementById('historyBtn');
+      if (historyBtn) {
+        historyBtn.style.display =
+          this.isValidated && this.userEmail ? 'inline-flex' : 'none';
+      }
     }
   }
 
   hasRewardAttemptsLeft() {
-    const hasLeft = this.attemptsUsed < 2;
-    console.log('🎁 Reward attempts left?', hasLeft, '(', this.attemptsUsed, '/ 2)');
-    return hasLeft;
-  }
-
-  getRewardCodeForScore(score) {
-    const reward = this.getRewardForScore(score);
-    const code = reward?.reward_code || 'PRACTICE';
-    console.log('🎫 Reward code for score', score, ':', code);
-    return code;
-  }
-
-  async saveQuizResult(score, timeTaken, rewardCode, answers) {
-    if (!this.client || !this.userEmail || !this.userId) {
-      console.warn('⚠️ Cannot save result - user not validated');
-      return;
-    }
-
-    console.log('💾 Saving quiz result - Score:', score, 'Time:', timeTaken, 'Reward:', rewardCode);
-
-    try {
-      const newAttemptNumber = this.attemptsUsed + 1;
-
-      // ✅ FIX 1: Insert quiz attempt
-      const { data: attemptData, error: insertError } = await this.client
-        .from('quiz_attempts')
-        .insert([{
-          user_id: this.userId,
-          email: this.userEmail,
-          score: score,
-          total_questions: 10,
-          time_taken: timeTaken,
-          reward: rewardCode,
-          attempt_number: newAttemptNumber
-        }])
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error('❌ Insert attempt error:', insertError);
-        throw insertError;
-      }
-
-      console.log('✅ Attempt saved:', attemptData);
-
-      // ✅ FIX 2: Update user attempts_used
-      const { data: userData, error: updateError } = await this.client
-        .from('quiz_users')
-        .update({
-          attempts_used: newAttemptNumber,
-          last_score: score,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', this.userId)
-        .select()
-        .single();
-
-      if (updateError) {
-        console.error('❌ Update user error:', updateError);
-        throw updateError;
-      }
-
-      console.log('✅ User updated:', userData);
-
-      // ✅ FIX 3: Update local state
-      this.attemptsUsed = newAttemptNumber;
-      this.updateAttemptsDisplay();
-
-      console.log('✅ Quiz result saved successfully - New attempts used:', this.attemptsUsed);
-    } catch (err) {
-      console.error('❌ Failed to save quiz result:', err);
-    }
+    return this.attemptsUsed < 2;
   }
 
   getRewardForScore(score) {
@@ -394,12 +321,61 @@ class SupabaseHandler {
     };
   }
 
+  getRewardCodeForScore(score) {
+    const reward = this.getRewardForScore(score);
+    return reward?.reward_code || 'PRACTICE';
+  }
+
+  async saveQuizResult(score, timeTaken, rewardCode, answers) {
+    if (!this.client || !this.userEmail || !this.userId) {
+      console.warn('Cannot save result - user not validated');
+      return;
+    }
+
+    try {
+      const newAttemptNumber = this.attemptsUsed + 1;
+
+      const { error: insertError } = await this.client
+        .from('quiz_attempts')
+        .insert([{
+          user_id: this.userId,
+          email: this.userEmail,
+          score,
+          total_questions: 10,
+          time_taken: timeTaken,
+          reward: rewardCode,
+          attempt_number: newAttemptNumber,
+          answers
+        }]);
+
+      if (insertError) throw insertError;
+
+      const { data: userData, error: updateError } = await this.client
+        .from('quiz_users')
+        .update({
+          attempts_used: newAttemptNumber,
+          last_score: score,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', this.userId)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      this.attemptsUsed = userData.attempts_used || newAttemptNumber;
+      this.updateAttemptsDisplay();
+    } catch (err) {
+      console.error('Failed to save quiz result:', err);
+    }
+  }
+
   async getLeaderboard(limit = 20) {
-    return await this.fetchLeaderboard(limit);
+    return this.fetchLeaderboard(limit);
   }
 
   async getUserHistory() {
-    return await this.fetchUserHistory();
+    return this.fetchUserHistory();
   }
 
   async fetchLeaderboard(limit = 20) {
@@ -415,23 +391,17 @@ class SupabaseHandler {
         .limit(limit);
 
       if (error) throw error;
-      console.log('📊 Leaderboard loaded:', data?.length, 'entries');
       return data || [];
     } catch (err) {
-      console.error('❌ Failed to fetch leaderboard:', err);
+      console.error('Failed to fetch leaderboard:', err);
       return [];
     }
   }
 
   async fetchUserHistory() {
-    if (!this.client || !this.userEmail) {
-      console.warn('⚠️ Cannot fetch history - No client or email');
-      return [];
-    }
+    if (!this.client || !this.userEmail) return [];
 
     try {
-      console.log('📜 Fetching history for:', this.userEmail);
-      
       const { data, error } = await this.client
         .from('quiz_attempts')
         .select('*')
@@ -440,15 +410,12 @@ class SupabaseHandler {
         .limit(20);
 
       if (error) throw error;
-      
-      console.log('✅ History loaded:', data?.length, 'attempts');
       return data || [];
     } catch (err) {
-      console.error('❌ Failed to fetch history:', err);
+      console.error('Failed to fetch history:', err);
       return [];
     }
   }
 }
 
-// Global instance
 window.supabaseHandler = new SupabaseHandler();
