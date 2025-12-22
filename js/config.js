@@ -17,7 +17,7 @@ window.CONFIG = {
   },
 
   urls: {
-    magentoApi: '/.netlify/functions/quiz-api.js',  // Your Magento API endpoint
+    magentoApi: '/.netlify/functions/quiz-api',  // Your Magento API endpoint
     redeem: 'https://pinkblue.in/cart'
   },
 
