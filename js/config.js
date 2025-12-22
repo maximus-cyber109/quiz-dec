@@ -472,6 +472,6 @@ window.CONFIG = {
   ],
 
   shareMessage: (score, total, name = 'I') => {
-    return `${name} just scored ${score}/${total} in PinkBlue Quizmas Dental Challenge! 🎉\n\nTest your knowledge: https://pinkblue.in/pb-quiz\n\n#PBQuiz #DentalChallenge`;
+    return `${name} just scored ${score}/${total} in PinkBlue Quizmas Dental Challenge! 🎉\n\nTest your knowledge: https://pinkblue.in/pb-quiz25\n\n#PBQuiz #DentalChallenge`;
   }
 };
