@@ -566,7 +566,7 @@ class QuizGame {
       }
 
       data.forEach((entry, index) => {
-        const date = new Date(entry.played_at);
+        const date = new Date(entry.created_at);
         const formatted = date.toLocaleString('en-IN', {
           month: 'short',
           day: 'numeric',
