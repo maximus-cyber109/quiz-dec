@@ -6,8 +6,8 @@
 const CONFIG = {
     // Supabase Configuration
     supabase: {
-        url: 'YOUR_SUPABASE_URL_HERE',
-        key: 'YOUR_SUPABASE_ANON_KEY_HERE'
+        url: 'https://aaqkdaakxxgobwdwlega.supabase.co',
+        key: 'sb_publishable_VTuc5nhwicP9shHxWMmT-Q_XJK-NVMf'
     },
 
     // Quiz Settings
