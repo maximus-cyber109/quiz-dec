@@ -236,14 +236,12 @@ class SupabaseHandler {
     this.renderRewardsCarousel();
   }
 
-  // UPDATED for bigger images + no dark bg
   renderRewardsCarousel() {
     const container = document.getElementById('rewardsCarousel');
     if (!container) return;
 
     container.innerHTML = '';
 
-    // Show ALL rewards in carousel (including priority 0)
     const carouselRewards = this.allRewards
       .slice()
       .sort((a, b) => b.min_score - a.min_score);
@@ -278,7 +276,6 @@ class SupabaseHandler {
     }
   }
 
-  // Called from quiz.js
   updateAttemptsDisplay() {
     if (!window.quiz || !quiz.updateAttemptsUI) return;
     quiz.updateAttemptsUI(this.attemptsUsed, this.isValidated);
@@ -289,12 +286,44 @@ class SupabaseHandler {
     quiz.updateHistoryState(this.userEmail, this.isValidated);
   }
 
-  // Called by quiz.js when user finishes a run
-  async recordAttempt(score, total, timeTakenSec) {
-    if (!this.client || !this.userEmail || !this.userId) return;
+  // ✅ NEW: Check if user has reward attempts left
+  hasRewardAttemptsLeft() {
+    return this.attemptsUsed < 2;
+  }
+
+  // ✅ NEW: Get reward code for score
+  getRewardCodeForScore(score) {
+    const reward = this.getRewardForScore(score);
+    return reward?.reward_code || 'PRACTICE';
+  }
+
+  // ✅ NEW: Save quiz result
+  async saveQuizResult(score, timeTaken, rewardCode, answers) {
+    if (!this.client || !this.userEmail || !this.userId) {
+      console.warn('Cannot save result - user not validated');
+      return;
+    }
 
     try {
-      // Update attempts_used
+      const attemptNumber = this.attemptsUsed + 1;
+
+      // Insert quiz attempt
+      const { error: insertError } = await this.client
+        .from('quiz_attempts')
+        .insert([{
+          user_id: this.userId,
+          email: this.userEmail,
+          score: score,
+          total_questions: 10,
+          time_taken: timeTaken,
+          reward: rewardCode,
+          attempt_number: attemptNumber,
+          played_at: new Date().toISOString()
+        }]);
+
+      if (insertError) throw insertError;
+
+      // Update user
       const { error: updateError } = await this.client
         .from('quiz_users')
         .update({
@@ -305,30 +334,43 @@ class SupabaseHandler {
         .eq('id', this.userId);
 
       if (updateError) throw updateError;
+
       this.attemptsUsed += 1;
-
-      // Insert into history
-      const { error: insertError } = await this.client.from('quiz_attempts').insert([
-        {
-          user_id: this.userId,
-          email: this.userEmail,
-          score,
-          total_questions: total,
-          time_taken_sec: timeTakenSec,
-          played_at: new Date().toISOString()
-        }
-      ]);
-
-      if (insertError) throw insertError;
-
       this.updateAttemptsDisplay();
-      this.updateHistoryButton();
+
+      console.log('✅ Quiz result saved');
     } catch (err) {
-      console.error('Failed to record attempt:', err);
+      console.error('Failed to save quiz result:', err);
     }
   }
 
-  // Used by results / leaderboard screens
+  getRewardForScore(score) {
+    if (!this.allRewards || this.allRewards.length === 0) return null;
+
+    const reward = this.allRewards.find(
+      (r) => score >= r.min_score && score <= r.max_score && r.priority > 0
+    );
+
+    if (!reward) return null;
+
+    const key = `${reward.min_score}-${reward.max_score}`;
+    const code = this.rewardCodeMap[key] || null;
+
+    return {
+      ...reward,
+      reward_code: code
+    };
+  }
+
+  // Alias methods for quiz.js compatibility
+  async getLeaderboard(limit = 20) {
+    return await this.fetchLeaderboard(limit);
+  }
+
+  async getUserHistory() {
+    return await this.fetchUserHistory();
+  }
+
   async fetchLeaderboard(limit = 20) {
     if (!this.client) return [];
 
@@ -337,7 +379,7 @@ class SupabaseHandler {
         .from('quiz_attempts')
         .select('*')
         .order('score', { ascending: false })
-        .order('time_taken_sec', { ascending: true })
+        .order('time_taken', { ascending: true })
         .order('played_at', { ascending: true })
         .limit(limit);
 
@@ -366,24 +408,6 @@ class SupabaseHandler {
       console.error('Failed to fetch history:', err);
       return [];
     }
-  }
-
-  getRewardForScore(score) {
-    if (!this.allRewards || this.allRewards.length === 0) return null;
-
-    const reward = this.allRewards.find(
-      (r) => score >= r.min_score && score <= r.max_score && r.priority > 0
-    );
-
-    if (!reward) return null;
-
-    const key = `${reward.min_score}-${reward.max_score}`;
-    const code = this.rewardCodeMap[key] || null;
-
-    return {
-      ...reward,
-      reward_code: code
-    };
   }
 }
 
