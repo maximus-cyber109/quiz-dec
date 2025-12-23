@@ -143,7 +143,7 @@ class SupabaseHandler {
 
       if (data) {
         this.userId = data.id;
-        this.attemptsUsed = data.attempts_used || 0;
+        this.attemptsUsed = Number(data.attempts_used || 0);
       } else {
         await this.createUser();
       }
@@ -279,7 +279,6 @@ class SupabaseHandler {
     if (window.quiz && typeof quiz.updateAttemptsUI === 'function') {
       quiz.updateAttemptsUI(this.attemptsUsed, this.isValidated);
     } else {
-      // Fallback: write directly to #attemptsLeft if quiz not ready yet
       const el = document.getElementById('attemptsLeft');
       if (el) {
         el.textContent = Math.max(0, 2 - this.attemptsUsed);
@@ -307,23 +306,29 @@ class SupabaseHandler {
     if (!this.allRewards || this.allRewards.length === 0) return null;
 
     const reward = this.allRewards.find(
-      (r) => score >= r.min_score && score <= r.max_score && r.priority > 0
+      (r) => score >= r.min_score && score <= r.max_score
     );
 
     if (!reward) return null;
 
     const key = `${reward.min_score}-${reward.max_score}`;
-    const code = this.rewardCodeMap[key] || null;
+    const codeFromMap = this.rewardCodeMap[key];
 
     return {
       ...reward,
-      reward_code: code
+      reward_code: codeFromMap || reward.reward_code || 'TRYAGAIN'
     };
   }
 
   getRewardCodeForScore(score) {
+    const hasLeft = this.hasRewardAttemptsLeft();
     const reward = this.getRewardForScore(score);
-    return reward?.reward_code || 'PRACTICE';
+
+    if (!hasLeft) {
+      return 'PRACTICE';
+    }
+
+    return reward?.reward_code || 'TRYAGAIN';
   }
 
   async saveQuizResult(score, timeTaken, rewardCode, answers) {
