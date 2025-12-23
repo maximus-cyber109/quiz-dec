@@ -122,18 +122,14 @@ class QuizGame {
   }
 
   handleStartClick() {
-    // Check if email exists in URL or already validated
     const urlParams = new URLSearchParams(window.location.search);
     const emailParam = urlParams.get('email');
 
     if (emailParam && window.supabaseHandler?.isValidEmail(emailParam)) {
-      // Email in URL and valid, show rules modal directly
       this.showRulesModal();
     } else if (window.supabaseHandler?.userEmail) {
-      // Email already entered, show rules modal
       this.showRulesModal();
     } else {
-      // No email, show email modal first
       window.supabaseHandler?.showEmailModal();
     }
   }
@@ -231,7 +227,6 @@ class QuizGame {
     this.answers = [];
     this.isAnswerLocked = false;
 
-    // Select questions by difficulty
     const easy = CONFIG.questions.filter(q => q.difficulty === 'easy');
     const medium = CONFIG.questions.filter(q => q.difficulty === 'medium');
     const hard = CONFIG.questions.filter(q => q.difficulty === 'hard');
@@ -242,7 +237,6 @@ class QuizGame {
 
     this.questions = this.shuffleArray([...selectedEasy, ...selectedMedium, ...selectedHard]);
 
-    // Check if user has reward attempts left
     const hasRewards = window.supabaseHandler?.hasRewardAttemptsLeft();
     const noRewardsMsg = document.getElementById('noRewardsMessage');
     if (noRewardsMsg) {
@@ -448,8 +442,8 @@ class QuizGame {
       0: 'Better Luck Next Time! 🍀'
     };
 
-    // Handle rewards display
-    if (!hasRewardsLeft || !rewardCode || rewardCode === 'PRACTICE') {
+    // Practice Mode ONLY when no attempts left
+    if (!hasRewardsLeft || rewardCode === 'PRACTICE') {
       document.getElementById('noRewardsMessageResults').style.display = 'block';
       document.getElementById('rewardCard').style.display = 'none';
       document.getElementById('resultsTitle').textContent = 'Practice Complete!';
@@ -473,7 +467,6 @@ class QuizGame {
     document.getElementById('resultsSubtitle').textContent = 
       `You scored ${this.score}/${CONFIG.quiz.totalQuestions} in ${Math.floor(timeTaken / 60)}:${(timeTaken % 60).toString().padStart(2, '0')}`;
 
-    // Save result
     await window.supabaseHandler?.saveQuizResult(this.score, timeTaken, rewardCode, this.answers);
   }
 
@@ -633,15 +626,12 @@ class QuizGame {
     });
   }
 
-   updateAttemptsUI(attemptsUsed, isValidated) {
+  updateAttemptsUI(attemptsUsed, isValidated) {
     const attemptsValue =
       document.querySelector('.attempts-value') ||
       document.getElementById('attemptsLeft');
 
-    if (!attemptsValue) {
-      console.warn('Attempts element not found');
-      return;
-    }
+    if (!attemptsValue) return;
 
     const remaining = Math.max(0, 2 - attemptsUsed);
     attemptsValue.textContent = remaining;
@@ -659,10 +649,7 @@ class QuizGame {
     const historyBtn =
       this.buttons?.history || document.getElementById('historyBtn');
 
-    if (!historyBtn) {
-      console.warn('History button not found');
-      return;
-    }
+    if (!historyBtn) return;
 
     historyBtn.style.display =
       isValidated && email ? 'inline-flex' : 'none';
@@ -726,7 +713,6 @@ class QuizGame {
   }
 }
 
-// init + resync with Supabase
 let quiz;
 document.addEventListener('DOMContentLoaded', () => {
   quiz = new QuizGame();
