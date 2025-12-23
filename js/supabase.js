@@ -492,6 +492,7 @@ class SupabaseHandler {
       const { data, error } = await this.client
         .from('quiz_users')
         .select('*')
+        .gt('best_score', 0)
         .order('best_score', { ascending: false })
         .order('best_time', { ascending: true })
         .order('created_at', { ascending: true })
