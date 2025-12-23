@@ -513,10 +513,12 @@ class QuizGame {
         const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
         const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1;
         
-        const name = entry.email?.split('@')[0] || 'Anonymous';
+        // Use the actual name from quiz_users, fallback to email prefix
+        const name = entry.name || entry.email?.split('@')[0] || 'Anonymous';
         
-        const mins = Math.floor(entry.time_taken / 60);
-        const secs = entry.time_taken % 60;
+        // Use best_time from quiz_users
+        const mins = Math.floor(entry.best_time / 60);
+        const secs = entry.best_time % 60;
 
         const item = document.createElement('div');
         item.className = `leader-item ${rankClass}`;
@@ -526,7 +528,7 @@ class QuizGame {
             <div class="leader-name">${name}</div>
             <div class="leader-time">Time: ${mins}:${secs.toString().padStart(2, '0')}</div>
           </div>
-          <div class="leader-score">${entry.score}<span style="opacity:0.5;font-size:1rem">/10</span></div>
+          <div class="leader-score">${entry.best_score}<span style="opacity:0.5;font-size:1rem">/10</span></div>
         `;
         container.appendChild(item);
       });
