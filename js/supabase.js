@@ -474,7 +474,6 @@ class SupabaseHandler {
 
     } catch (err) {
       console.error('❌ SAVE FAILED:', err);
-      // No popup - just log to console
     }
   }
 
@@ -491,10 +490,10 @@ class SupabaseHandler {
 
     try {
       const { data, error } = await this.client
-        .from('quiz_attempts')
+        .from('quiz_users')
         .select('*')
-        .order('score', { ascending: false })
-        .order('time_taken', { ascending: true })
+        .order('best_score', { ascending: false })
+        .order('best_time', { ascending: true })
         .order('created_at', { ascending: true })
         .limit(limit);
 
