@@ -32,6 +32,8 @@ class SupabaseHandler {
         CONFIG.supabase.key
       );
 
+      console.log('✅ Supabase client initialized');
+
       const urlParams = new URLSearchParams(window.location.search);
       const emailParam = urlParams.get('email');
 
@@ -131,6 +133,8 @@ class SupabaseHandler {
     }
 
     try {
+      console.log('🔍 Validating user:', this.userEmail);
+
       const { data, error } = await this.client
         .from('quiz_users')
         .select('*')
@@ -138,29 +142,50 @@ class SupabaseHandler {
         .single();
 
       if (error && error.code !== 'PGRST116') {
+        console.error('❌ Query error:', error);
         throw error;
       }
 
       if (data) {
+        console.log('✅ User found:', data);
         this.userId = data.id;
         this.attemptsUsed = Number(data.attempts_used || 0);
       } else {
+        console.log('⚠️ User not found, creating...');
         await this.createUser();
+        
+        if (!this.userId) {
+          console.error('❌ Failed to create user');
+          throw new Error('User creation failed');
+        }
+        
+        console.log('✅ User created with ID:', this.userId);
       }
 
       this.isValidated = true;
       this.updateAttemptsDisplay();
       this.updateHistoryButton();
+
+      console.log('✅ Validation complete:', {
+        userId: this.userId,
+        attemptsUsed: this.attemptsUsed
+      });
+
     } catch (err) {
-      console.error('Supabase validation failed:', err);
+      console.error('❌ Validation failed:', err);
       this.isValidated = false;
     }
   }
 
   async createUser() {
-    if (!this.client) return;
+    if (!this.client) {
+      console.error('❌ No client for createUser');
+      return;
+    }
 
     try {
+      console.log('💾 Creating user:', this.userEmail);
+
       const { data, error } = await this.client
         .from('quiz_users')
         .insert([
@@ -173,14 +198,20 @@ class SupabaseHandler {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Create user error:', error);
+        throw error;
+      }
 
       if (data) {
+        console.log('✅ User created:', data);
         this.userId = data.id;
         this.attemptsUsed = 0;
+      } else {
+        console.error('❌ No data returned from insert');
       }
     } catch (err) {
-      console.error('Failed to create user:', err);
+      console.error('❌ Failed to create user:', err);
     }
   }
 
@@ -332,15 +363,46 @@ class SupabaseHandler {
   }
 
   async saveQuizResult(score, timeTaken, rewardCode, answers) {
-    if (!this.client || !this.userEmail || !this.userId) {
-      console.warn('Cannot save result - user not validated');
+    console.log('🔍 SAVE DEBUG:', {
+      client: !!this.client,
+      email: this.userEmail,
+      userId: this.userId,
+      score,
+      rewardCode,
+      attemptsUsed: this.attemptsUsed
+    });
+
+    if (!this.client) {
+      console.error('❌ SAVE FAILED: No Supabase client');
       return;
+    }
+
+    if (!this.userEmail) {
+      console.error('❌ SAVE FAILED: No email');
+      return;
+    }
+
+    if (!this.userId) {
+      console.error('❌ SAVE FAILED: No userId - user not created in database');
+      await this.createUser();
+      if (!this.userId) {
+        console.error('❌ SAVE FAILED: Could not create user');
+        return;
+      }
     }
 
     try {
       const newAttemptNumber = this.attemptsUsed + 1;
 
-      const { error: insertError } = await this.client
+      console.log('💾 Inserting quiz attempt:', {
+        user_id: this.userId,
+        email: this.userEmail,
+        score,
+        reward: rewardCode,
+        attempt_number: newAttemptNumber
+      });
+
+      const { data: insertData, error: insertError } = await this.client
         .from('quiz_attempts')
         .insert([{
           user_id: this.userId,
@@ -351,9 +413,17 @@ class SupabaseHandler {
           reward: rewardCode,
           attempt_number: newAttemptNumber,
           answers
-        }]);
+        }])
+        .select();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('❌ INSERT ERROR:', insertError);
+        throw insertError;
+      }
+
+      console.log('✅ Quiz attempt inserted:', insertData);
+
+      console.log('💾 Updating user attempts_used to:', newAttemptNumber);
 
       const { data: userData, error: updateError } = await this.client
         .from('quiz_users')
@@ -366,12 +436,21 @@ class SupabaseHandler {
         .select()
         .single();
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('❌ UPDATE ERROR:', updateError);
+        throw updateError;
+      }
+
+      console.log('✅ User updated:', userData);
 
       this.attemptsUsed = userData.attempts_used || newAttemptNumber;
       this.updateAttemptsDisplay();
+
+      console.log('✅ SAVE COMPLETE. New attempts:', this.attemptsUsed);
+
     } catch (err) {
-      console.error('Failed to save quiz result:', err);
+      console.error('❌ SAVE FAILED:', err);
+      alert('Failed to save quiz result. Check console for details.');
     }
   }
 
