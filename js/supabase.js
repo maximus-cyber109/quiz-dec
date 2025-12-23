@@ -402,6 +402,7 @@ class SupabaseHandler {
         attempt_number: newAttemptNumber
       });
 
+      // Insert quiz attempt
       const { data: insertData, error: insertError } = await this.client
         .from('quiz_attempts')
         .insert([{
@@ -422,13 +423,37 @@ class SupabaseHandler {
 
       console.log('✅ Quiz attempt inserted:', insertData);
 
-      console.log('💾 Updating user attempts_used to:', newAttemptNumber);
+      // Get current user data to compare best score/time
+      const { data: currentUser } = await this.client
+        .from('quiz_users')
+        .select('best_score, best_time, total_score')
+        .eq('id', this.userId)
+        .single();
 
+      const bestScore = currentUser?.best_score || 0;
+      const bestTime = currentUser?.best_time || null;
+      const totalScore = currentUser?.total_score || 0;
+
+      // Calculate new best values
+      const newBestScore = Math.max(bestScore, score);
+      const newBestTime = (bestTime === null || timeTaken < bestTime) ? timeTaken : bestTime;
+      const newTotalScore = totalScore + score;
+
+      console.log('💾 Updating user:', {
+        attempts_used: newAttemptNumber,
+        best_score: newBestScore,
+        best_time: newBestTime,
+        total_score: newTotalScore
+      });
+
+      // Update quiz_users
       const { data: userData, error: updateError } = await this.client
         .from('quiz_users')
         .update({
           attempts_used: newAttemptNumber,
-          last_score: score,
+          best_score: newBestScore,
+          best_time: newBestTime,
+          total_score: newTotalScore,
           updated_at: new Date().toISOString()
         })
         .eq('id', this.userId)
@@ -449,7 +474,7 @@ class SupabaseHandler {
 
     } catch (err) {
       console.error('❌ SAVE FAILED:', err);
-      alert('Failed to save quiz result. Check console for details.');
+      // No popup - just log to console
     }
   }
 
