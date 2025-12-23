@@ -408,7 +408,6 @@ class SupabaseHandler {
           user_id: this.userId,
           email: this.userEmail,
           score,
-          total_questions: 10,
           time_taken: timeTaken,
           reward: rewardCode,
           attempt_number: newAttemptNumber,
